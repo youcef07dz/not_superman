@@ -1,0 +1,62 @@
+# AEGIS Arabic voice lines
+# columns are separated by a TAB: file <TAB> voice <TAB> text
+# render each text with the given voice, save as mono OGG Vorbis 24 kHz,
+# and keep the exact filename in the audio/ folder.
+# texts are fully vowelled (tashkeel) - read them exactly as written.
+# voice ids: hero_female hero_male cit_female cit_male alien_female alien_male
+#            titan_female titan_male blade_female blade_male mother_female
+#            mother_male boss_female boss_male disp
+file	voice	text
+alien_female_01.ogg	alien_female	اُقْتُلُوا الْبَطَلْ!
+alien_female_02.ogg	alien_female	شْرِيييييييييييك! شْرِييييييييك!
+alien_female_03.ogg	alien_female	مِنْ أَجْلِ السِّرْبْ!
+alien_female_04.ogg	alien_female	اِسْحَقُوهُمْ!
+alien_male_01.ogg	alien_male	اُقْتُلُوا الْبَطَلْ!
+alien_male_02.ogg	alien_male	شْرِيييييييييييك! شْرِييييييييك!
+alien_male_03.ogg	alien_male	مِنْ أَجْلِ السِّرْبْ!
+alien_male_04.ogg	alien_male	اِسْحَقُوهُمْ!
+blade_female_39.ogg	blade_female	أَمْسِكْنِي إِنِ اسْتَطَعْتَ، أَيُّهَا الطَّيَّارْ.
+blade_female_40.ogg	blade_female	السَّمَاءُ مِلْكُ سِكَايْ بْلَيْدْ.
+blade_female_45.ogg	blade_female	بَطِيءٌ جِدّاً، أَيُّهَا الْبَطَلْ!
+blade_female_46.ogg	blade_female	الْآنَ تَرَى سُرْعَتِي الْحَقِيقِيَّة.
+blade_male_39.ogg	blade_male	أَمْسِكْنِي إِنِ اسْتَطَعْتَ، أَيُّهَا الطَّيَّارْ.
+blade_male_40.ogg	blade_male	السَّمَاءُ مِلْكُ سِكَايْ بْلَيْدْ.
+blade_male_45.ogg	blade_male	بَطِيءٌ جِدّاً، أَيُّهَا الْبَطَلْ!
+blade_male_46.ogg	blade_male	الْآنَ تَرَى سُرْعَتِي الْحَقِيقِيَّة.
+boss_female_06.ogg	boss_female	لَا... مُسْتَحِيلْ!
+boss_female_07.ogg	boss_female	لَمْ يَنْتَهِ الْأَمْرْ!
+boss_male_06.ogg	boss_male	لَا... مُسْتَحِيلْ!
+boss_male_07.ogg	boss_male	لَمْ يَنْتَهِ الْأَمْرْ!
+cit_female_15.ogg	cit_female	شُكْراً لَكَ يَا إِيجِيس!
+cit_female_16.ogg	cit_female	لَقَدْ أَنْقَذْتَنِي!
+cit_female_17.ogg	cit_female	بَطَلِي!
+cit_female_49.ogg	cit_female	النَّجْدَة! سَاعِدُونَا!
+cit_female_50.ogg	cit_female	اِهْرُبُوا! لَقَدْ وَصَلُوا!
+cit_female_51.ogg	cit_female	آه! لَا، أَرْجُوكْ!
+cit_male_15.ogg	cit_male	شُكْراً لَكَ يَا إِيجِيس!
+cit_male_16.ogg	cit_male	لَقَدْ أَنْقَذْتَنِي!
+cit_male_17.ogg	cit_male	بَطَلِي!
+cit_male_49.ogg	cit_male	النَّجْدَة! سَاعِدُونَا!
+cit_male_50.ogg	cit_male	اِهْرُبُوا! لَقَدْ وَصَلُوا!
+cit_male_51.ogg	cit_male	آه! لَا، أَرْجُوكْ!
+disp_52.ogg	disp	فَقَدْنَا الْمُتَّصِلْ.
+disp_53.ogg	disp	عَشْرُ ثَوَانٍ! أَسْرِعْ!
+disp_54.ogg	disp	تَمَّ تَأْكِيدُ الْإِنْقَاذْ. عَمَلٌ جَيِّدْ يَا إِيجِيس.
+disp_55.ogg	disp	مَبْنًى عَلَى وَشْكِ الِانْهِيَارْ.
+disp_56.ogg	disp	اِنْهَارَ مَبْنًى.
+disp_57.ogg	disp	نِدَاءٌ عَاجِلْ. مُوَاطِنٌ يَسْقُطْ. أَسْرِعْ!
+disp_58.ogg	disp	مُوَاطِنٌ مُحْتَجَزٌ تَحْتَ الْأَنْقَاضْ.
+disp_59.ogg	disp	الْمُتَّصِلُ عَلَى سَطْحِ مَبْنًى. أَسْرِعْ!
+disp_60.ogg	disp	بَقِيَتْ ثَلَاثُونَ ثَانِيَة.
+disp_61.ogg	disp	أَمْسَكْتَ بِهِمْ. تَوَجَّهْ إِلَى الْمِنْطَقَةِ الْآمِنَة.
+disp_62.ogg	disp	تَوَجَّهْ إِلَى الْمِنْطَقَةِ الْآمِنَة.
+hero_female_00.ogg	hero_female	إِيجِيس جَاهِزْ. اِحْمِ الْمَدِينَة!
+hero_female_05.ogg	hero_female	يَجِبُ أَنْ أَصْمُدْ!
+hero_female_08.ogg	hero_female	سَقَطَ تَهْدِيدٌ آخَرْ.
+hero_female_18.ogg	hero_female	الْمِنْطَقَةُ آمِنَة. عَمَلٌ جَيِّدْ.
+hero_female_19.ogg	hero_female	هَؤُلَاءِ كُلُّهُمْ. الْمُوَاطِنُونَ بِأَمَانْ.
+hero_female_20.ogg	hero_female	أَعُودُ إِلَى الْقَاعِدَة.
+hero_female_21.ogg	hero_female	لَيْسَ مَا دُمْتُ هُنَا!
+hero_female_22.ogg	hero_female	اِبْقَوْا خَلْفِي جَمِيعاً!
+hero_female_23.ogg	hero_female	هَا هُمْ قَادِمُونْ!
+hero_female_24.ogg	hero_female	اِتِّصَالَاتٌ

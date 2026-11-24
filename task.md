@@ -1,16 +1,14 @@
 # Task
 
-Goal: mobile.html touch controls, landscape HUD, settings, fire and space.
+Goal: Arabic version in `arabic/` (text + voice).
 
 Done:
-- Icon buttons in a quarter-circle arc; FLY is the center button. Cooldown badges.
-- Messages in corners; rescue arrow fixed.
-- HUD: minimap top-left, flying info under it, HP/EN top center, boss bar just below.
-- Settings on the start/pause screen: Music and Voice sliders, Graphics high/medium/low/potato, Mode easy/medium/hard/nightmare. Saved to localStorage.
-- Graphics set pixel ratio + fog draw distance. Mode sets enemy HP, damage taken, spawn count.
-- Laser sets cars, trees and buildings on fire and damages them. Fire burns for a few seconds. Ice breath puts fires out.
-- Flying above ~350m fades in space: dark sky, brighter stars, longer view, Earth, Moon and Sun. Same in pc.html.
+- `arabic/index.html`, `mobile.html`, `pc.html`: all UI text translated, `lang="ar" dir="rtl"`.
+- Voice lines translated in both the `CLIPS` map and the `say()` calls, so keys still match.
+- Voice: Piper `ar_JO-kareem-medium` (60 MB, CPU) with espeak Arabic phonemes, so the tashkeel in `tts_lines.txt` is used. Per-voice pitch via ffmpeg rubberband (formant preserved). OGGs in `arabic/audio/`.
+- MMS (`facebook/mms-tts-ara`) dropped: it ignores tashkeel, and asetrate pitch shifting sounded bad.
 
 Next:
-- Test on a real phone in landscape.
-- Tune difficulty and fire numbers after playtesting.
+- Finish the tashkeel pass: `arabic/tts_lines.txt` stops at 53 rows, the other 48 come from `tts_lines_missing.txt`.
+- Listen to a few clips on a real device.
+- Check the RTL layout on a phone in landscape.
