@@ -31,3 +31,6 @@
 - Placed outskirts scenery with `Math.hypot` checks that pushed houses inside the
   city: a scattered house at 45 degrees has |x|,|z| below the city half-size even
   though its radius is large. Fix: push out on the largest axis, not the radius.
+- Scattered houses landed on the roads and inside each other: placement only
+  checked the city square. Fix: `onRoad`/`onRiver` tests plus a placed list with
+  a minimum gap, retried up to 30 times (about 1.3 tries per house).

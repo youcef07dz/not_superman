@@ -94,36 +94,68 @@ for(let k=0;k<18;k++){const x=(Math.random()-.5)*52,z=(Math.random()-.5)*52;if(M
  const m4=new T.Matrix4(),qv=new T.Quaternion(),vv=new T.Vector3(),sv=new T.Vector3(),axY=new T.Vector3(0,1,0);
  const put=(im,i,x,y,z,sx,sy,sz,ry)=>{vv.set(x,y,z);sv.set(sx,sy,sz);qv.setFromAxisAngle(axY,ry||0);m4.compose(vv,qv,sv);im.setMatrixAt(i,m4)};
  const away=(x,z)=>{if(Math.abs(x)<CITY+30&&Math.abs(z)<CITY+30){const k=(CITY+40)/Math.max(Math.abs(x),Math.abs(z));x*=k;z*=k}return[x,z]};
+ // roads leave the city at x or z = -240/0/240, 34 wide, from the city edge out to 1000
+ const ROADS=[-240,0,240],RH=17,riverZ=x=>830+Math.sin(x*.004)*130;
+ const onRoad=(x,z,hw)=>{for(const o of ROADS){if(Math.abs(x-o)<RH+hw&&Math.abs(z)>CITY-hw&&Math.abs(z)<1000+hw)return true;
+  if(Math.abs(z-o)<RH+hw&&Math.abs(x)>CITY-hw&&Math.abs(x)<1000+hw)return true}return false};
+ const onRiver=(x,z,hw)=>Math.abs(z-riverZ(x))<55+hw;
+ const taken=[],free=(x,z,r)=>taken.every(t=>Math.hypot(t.x-x,t.z-z)>t.r+r);
+ // gabled roof: ridge along X, base 1x1 at y=0, ridge line at y=1
+ const roofG=new T.BufferGeometry();
+ roofG.setAttribute('position',new T.Float32BufferAttribute([-.5,0,.5,.5,0,.5,.5,1,0,-.5,0,.5,.5,1,0,-.5,1,0,.5,0,-.5,-.5,0,-.5,-.5,1,0,.5,0,-.5,-.5,1,0,.5,1,0,.5,0,.5,.5,0,-.5,.5,1,0,-.5,0,-.5,-.5,0,.5,-.5,1,0],3));
+ roofG.computeVertexNormals();
  // ground ring around the city, pushed back so roads and the river sit clean on it
- const gm=new T.MeshLambertMaterial({color:0x2f3c33,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});townMats.push(gm);
+ const gm=new T.MeshLambertMaterial({color:0x33402c,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});townMats.push(gm);
  const outG=(w,d,x,z)=>{const m=new T.Mesh(new T.PlaneGeometry(w,d),gm);m.rotation.x=-Math.PI/2;m.position.set(x,-.05,z);scene.add(m)};
  const W=1300-CITY,mid=(CITY+1300)/2;
  outG(2600,W,0,-mid);outG(2600,W,0,mid);outG(W,2*CITY,-mid,0);outG(W,2*CITY,mid,0);
- // mountain wall on four sides, bases kept clear of the city
- const mtn=new T.InstancedMesh(new T.ConeGeometry(1,1,5),new T.MeshLambertMaterial({color:0x46506a,flatShading:true}),56);
- for(let i=0;i<56;i++){const side=i&3,al=R(-1150,1150),bw=R(90,250),h=R(150,380),off=CITY+bw+R(40,240);let x,z;
-  if(side>1){x=side===2?-off:off;z=al}else{x=al;z=side?-off:off}
-  put(mtn,i,x,h/2-.05,z,bw,h,bw,R(0,6.283))}
- mtn.frustumCulled=false;scene.add(mtn);townMats.push(mtn.material);
  // roads leaving the city on all four sides
  const rdm=new T.MeshLambertMaterial({color:0x23262f}),rd=new T.InstancedMesh(new T.PlaneGeometry(1,1).rotateX(-Math.PI/2),rdm,12);
  for(let i=0;i<3;i++)for(const s of[-1,1]){const o=-240+i*240;
   put(rd,i*2+(s>0?1:0),o,.03,s*720,34,1,560);put(rd,6+i*2+(s>0?1:0),s*720,.03,o,560,1,34)}
  rd.frustumCulled=false;scene.add(rd);townMats.push(rdm);
- // scattered houses with roofs
- const HN=84,wallM=new T.MeshLambertMaterial({color:0xffffff}),roofM=new T.MeshLambertMaterial({color:0x523233});
- const walls=new T.InstancedMesh(new T.BoxGeometry(1,1,1),wallM,HN),roofs=new T.InstancedMesh(new T.ConeGeometry(.75,1,4),roofM,HN),hc=new T.Color();
- for(let i=0;i<HN;i++){const a=R(0,6.283),r=R(480,1000),[x,z]=away(Math.cos(a)*r,Math.sin(a)*r);
-  const w=R(8,15),d=R(8,15),h=R(5,11),rh=R(3,6);
-  put(walls,i,x,h/2-.05,z,w,h,d,R(-.25,.25));walls.setColorAt(i,hc.setHSL(R(.05,.12),R(.3,.6),R(.42,.62)));
-  put(roofs,i,x,h+rh/2-.05,z,w*.8,rh,d*.8,Math.PI/4+R(-.05,.05))}
- if(walls.instanceColor)walls.instanceColor.needsUpdate=true;
- walls.frustumCulled=roofs.frustumCulled=false;scene.add(walls);scene.add(roofs);townMats.push(wallM,roofM);
- // vegetation: 340 instanced trees
- const TN=340,trks=new T.InstancedMesh(new T.CylinderGeometry(.3,.4,3,6),trunkM,TN),lvs=new T.InstancedMesh(new T.ConeGeometry(2.2,6,7),leafM,TN);
- for(let i=0;i<TN;i++){const a=R(0,6.283),r=R(470,1080),[x,z]=away(Math.cos(a)*r,Math.sin(a)*r),s=R(.7,1.7);
-  put(trks,i,x,1.5*s-.05,z,s,s,s);put(lvs,i,x,5.5*s-.05,z,s,s,s)}
- trks.frustumCulled=lvs.frustumCulled=false;scene.add(trks);scene.add(lvs);
+ // scattered cottages: stone plinth, plaster walls, thatch/shingle gable roof
+ const HN=84,plM=new T.MeshLambertMaterial({color:0x7d756e}),wallM=new T.MeshLambertMaterial({color:0xffffff}),roofM=new T.MeshLambertMaterial({color:0xffffff,flatShading:true});
+ const plinths=new T.InstancedMesh(new T.BoxGeometry(1,1,1),plM,HN),walls=new T.InstancedMesh(new T.BoxGeometry(1,1,1),wallM,HN),roofs=new T.InstancedMesh(roofG,roofM,HN),hc=new T.Color();
+ for(let i=0;i<HN;i++){
+  let x=0,z=0,w=8,d=8,h=5,rh=3;
+  for(let t=0;t<30;t++){const a=R(0,6.283),r=R(480,1000);[x,z]=away(Math.cos(a)*r,Math.sin(a)*r);
+   w=R(8,14);d=R(8,13);h=R(4,7.5);rh=R(2.5,4.5);
+   const hw=Math.hypot(w,d)*.55;if(!onRoad(x,z,hw)&&!onRiver(x,z,hw)&&free(x,z,hw))break}
+  taken.push({x,z,r:Math.hypot(w,d)*.55});
+  const ry=Math.atan2(x,z)+R(-.12,.12);
+  put(plinths,i,x,.25,z,w*1.06,.5,d*1.06,ry);
+  put(walls,i,x,.5+h/2,z,w,h,d,ry);walls.setColorAt(i,hc.setHSL(R(.09,.13),R(.16,.3),R(.5,.66)));
+  put(roofs,i,x,.5+h,z,w*1.16,rh,d*1.12,ry);roofs.setColorAt(i,hc.setHSL(R(.08,.13),R(.3,.5),R(.28,.42)));
+ }
+ for(const m of[plinths,walls,roofs]){m.frustumCulled=false;scene.add(m)}
+ walls.instanceColor.needsUpdate=roofs.instanceColor.needsUpdate=true;
+ townMats.push(plM,wallM,roofM);
+ // vegetation: oaks, pines and bushes, instanced; none on the roads or in the river
+ const ON=200,PN=140,TN=ON+PN,
+  oakM=new T.MeshLambertMaterial({color:0xffffff,flatShading:true}),pineM=new T.MeshLambertMaterial({color:0xffffff,flatShading:true}),bushM=new T.MeshLambertMaterial({color:0xffffff,flatShading:true});
+ const trks=new T.InstancedMesh(new T.CylinderGeometry(.18,.28,1,6).translate(0,.5,0),trunkM,TN),
+  oaks=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),oakM,ON),
+  pines=new T.InstancedMesh(new T.ConeGeometry(1,2.6,7),pineM,PN),
+  bushes=new T.InstancedMesh(new T.IcosahedronGeometry(1,0),bushM,180);
+ const hide=(im,i)=>put(im,i,0,-999,0,0,0,0);
+ const spot=hw=>{for(let t=0;t<30;t++){const a=R(0,6.283),r=R(470,1120),[x,z]=away(Math.cos(a)*r,Math.sin(a)*r);if(!onRoad(x,z,hw)&&!onRiver(x,z,hw)&&free(x,z,hw))return[x,z]}return null};
+ let n=0;
+ for(let i=0;i<ON;i++){const s=R(.6,1.4),p=spot(2.2*s);if(!p){hide(oaks,i);continue}
+  const[x,z]=p;taken.push({x,z,r:1.7*s});
+  put(trks,n++,x,0,z,s*1.6,s*3.4,s*1.6);put(oaks,i,x,5.4*s,z,2.7*s,2.3*s,2.7*s,R(0,6.283));
+  oaks.setColorAt(i,hc.setHSL(R(.26,.34),R(.35,.55),R(.22,.36)))}
+ for(let i=0;i<PN;i++){const s=R(.6,1.5),p=spot(1.8*s);if(!p){hide(pines,i);continue}
+  const[x,z]=p;taken.push({x,z,r:1.5*s});
+  put(trks,n++,x,0,z,s*.9,s*3.4,s*.9);put(pines,i,x,6.5*s,z,1.9*s,2.4*s,1.9*s,R(0,6.283));
+  pines.setColorAt(i,hc.setHSL(R(.3,.38),R(.3,.5),R(.16,.3)))}
+ for(;n<TN;n++)hide(trks,n);
+ for(let i=0;i<180;i++){const s=R(.7,1.9),p=spot(s);if(!p){hide(bushes,i);continue}
+  const[x,z]=p;put(bushes,i,x,s*.55,z,s,s*.75,s,R(0,6.283));
+  bushes.setColorAt(i,hc.setHSL(R(.24,.33),R(.3,.5),R(.24,.4)))}
+ for(const m of[trks,oaks,pines,bushes]){m.frustumCulled=false;scene.add(m)}
+ oaks.instanceColor.needsUpdate=pines.instanceColor.needsUpdate=bushes.instanceColor.needsUpdate=true;
+ townMats.push(oakM,pineM,bushM);
  // a winding river in the southern outskirts
  const rvg=new T.PlaneGeometry(2600,110,48,1);rvg.rotateX(-Math.PI/2);
  const rvp=rvg.attributes.position;for(let i=0;i<rvp.count;i++)rvp.setZ(i,rvp.getZ(i)+Math.sin(rvp.getX(i)*.004)*130);

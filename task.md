@@ -19,7 +19,7 @@ Done:
 - LOD: the Moon is a textured sphere with boulders/peaks/craters only when the camera is within 720 m (MOON.r\*1.6); farther away it is one gray disc sprite plus the halo. That hides ~93 moon meshes most of the time.
 - The space sun is one additive billboard sprite (yellow disc + glow) instead of two spheres.
 - Culling pass every 0.35 s: roof clutter and antennas hidden past 240 m, building meshes past `fog.far` (matters at night, when fog closes in), cars past ~390 m, ambient citizens past 300 m. The citizen flee test uses squared distances now.
-- Outskirts around the city, random per load and static (no updates, no collision): 56 instanced mountains, 84 instanced houses + roofs, 340 instanced trees, 12 road strips, a wavy river, 4 ground planes. That is about 10 draw calls total. Everything shares `townMats`, so it fades out with the city in space.
+- Outskirts around the city, random per load and static (no updates, no collision): 84 cottages (stone plinth, plaster walls, gabled thatch/shingle roof), 200 oaks, 140 pines, 180 bushes, 12 road strips, a wavy river, 4 ground planes. About 13 draw calls. Houses look like the village pack in `siege-wing-offline` (same stone/plaster/timber/thatch palette); the models there are a 3.4 MB `.glb`, which `file://` cannot fetch, so the shapes are rebuilt from primitives. Houses and plants are kept off the roads, out of the river, out of the city and out of each other.
 
 Next:
 - Play both pages on a real phone and a desktop browser; no browser test was possible in this session (Edge headless needs elevation).
