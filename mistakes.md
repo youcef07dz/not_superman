@@ -28,3 +28,6 @@
 - Throttled the rotating minimap to 12 Hz as a "cheap" win; it stepped visibly
   and read as lag. Fix: draw it every frame. Keep throttling only text that does
   not animate.
+- Placed outskirts scenery with `Math.hypot` checks that pushed houses inside the
+  city: a scattered house at 45 degrees has |x|,|z| below the city half-size even
+  though its radius is large. Fix: push out on the largest axis, not the radius.
