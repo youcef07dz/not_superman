@@ -1,208 +1,6 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<title>إيجيس</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
-<style>
-:root{color-scheme:dark;--gold:#ffcc33;--red:#d9262c;--ink:#07122e;--paper:#f3f6ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:'Barlow Condensed','Segoe UI',Tahoma,'Arial Narrow',Arial,sans-serif}
-canvas{display:block}
-#speed{position:fixed;inset:0;pointer-events:none;opacity:0;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 3deg,rgba(255,255,255,.55) 3.2deg 3.6deg,transparent 3.8deg 7deg);-webkit-mask:radial-gradient(circle at 50% 50%,transparent 38%,#000 88%);mask:radial-gradient(circle at 50% 50%,transparent 38%,#000 88%)}
-#hud{position:fixed;left:14px;top:calc(14px + env(safe-area-inset-top,0px));padding:7px 14px 8px 12px;background:rgba(7,18,46,.5);border-left:3px solid var(--gold);border-radius:6px;font-size:18px;font-weight:700;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;backdrop-filter:blur(4px)}
-#hud small{display:inline-block;font-size:12px;font-weight:500;opacity:.8;margin-right:10px}
-#mode{color:var(--gold);display:block;font-size:20px;margin-bottom:1px}
-#hint{position:fixed;left:0;right:0;bottom:calc(8px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;opacity:.5;text-shadow:0 2px 6px rgba(0,0,0,.7);pointer-events:none}
-#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(7,18,46,.62);text-align:center;padding:20px}
-#start h1{margin:0;font-size:clamp(64px,14vw,150px);line-height:.9;letter-spacing:.02em;font-weight:700;color:var(--gold);text-shadow:6px 6px 0 var(--red)}
-#start p{margin:0;font-size:22px;max-width:520px}
-#start .keys{font-size:18px;opacity:.85;line-height:1.5}
-#go{margin-top:0;font:700 26px 'Barlow Condensed','Segoe UI',Tahoma,'Arial Narrow',Arial,sans-serif;padding:12px 38px;border:0;border-radius:4px;background:var(--gold);color:var(--ink);cursor:pointer}
-#go:hover,#go:focus-visible{background:#fff;outline:3px solid var(--red)}
-#start .btns{display:flex;gap:12px;margin-top:14px}
-#pwbtn{font:700 20px 'Barlow Condensed','Segoe UI',Tahoma,'Arial Narrow',Arial,sans-serif;padding:12px 24px;border:2px solid var(--gold);border-radius:4px;background:transparent;color:var(--gold);cursor:pointer}
-#pwbtn:hover,#pwbtn:focus-visible{background:rgba(255,204,51,.15);outline:2px solid var(--red)}
-#stats{position:fixed;right:14px;top:calc(14px + env(safe-area-inset-top,0px));width:250px;padding:8px 12px;background:rgba(7,18,46,.5);border-right:3px solid var(--gold);border-radius:6px;text-align:right;font-size:18px;font-weight:700;line-height:1.25;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;backdrop-filter:blur(4px)}
-#ci{font-size:12px;font-weight:500;opacity:.8;margin-bottom:5px}
-.bar{height:8px;margin:0;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden;flex:1}.bar i{display:block;height:100%;width:100%}
-.meter{display:flex;align-items:center;gap:6px;font-size:11px;line-height:1.6}
-.meter.hp span{color:#ff8a90}.meter.en span{color:var(--gold)}
-#hp{background:#ff4a55}#en{background:#ffcc33}
-#ex{font-size:12px;font-weight:500;color:var(--gold);margin-top:5px;line-height:1.45;opacity:.9}
-#cross{position:fixed;left:50%;top:50%;width:16px;height:16px;margin:-8px;border:2px solid rgba(255,255,255,.7);border-radius:50%;pointer-events:none}
-#banner{position:fixed;left:0;right:0;top:calc(92px + env(safe-area-inset-top,0px));text-align:center;font-size:clamp(22px,3.4vw,40px);font-weight:700;color:var(--gold);text-shadow:2px 2px 0 var(--red);opacity:0;transition:opacity .4s;pointer-events:none}
-#flash{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,transparent 45%,rgba(217,38,44,.9))}
-#arrow{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);text-align:center;opacity:0;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.7);font-weight:700;color:var(--gold)}#ar{font-size:22px;line-height:1}
-#boss{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(480px,56vw);text-align:center;font-size:22px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.7);display:none;pointer-events:none}#boss .bar{margin:4px auto 0;height:14px}#bf{background:#c084ff}
-#mm{position:fixed;left:14px;bottom:calc(40px + env(safe-area-inset-bottom,0px));width:180px;height:180px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(7,18,46,.3);pointer-events:none}
-#sub{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(640px,74vw);text-align:center;font-size:14px;font-weight:600;padding:3px 12px;background:rgba(7,18,46,.5);border-radius:4px;opacity:0;transition:opacity .3s;pointer-events:none;text-shadow:0 2px 6px rgba(0,0,0,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#pwm{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(600px,92vw);max-height:82vh;overflow:auto;display:none;background:rgba(7,18,46,.97);border:2px solid var(--gold);border-radius:8px;padding:16px 18px;text-align:left;font-size:16px;box-shadow:0 20px 70px rgba(0,0,0,.7)}
-#pwm.open{display:block}
-.pwm-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:24px;font-weight:700;color:var(--gold);margin-bottom:8px}
-.pwm-head span:last-child{font-size:16px;color:var(--paper)}
-.pwm-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:8px 6px;border-top:1px solid rgba(255,255,255,.12);cursor:pointer;line-height:1.3}
-.pwm-row:hover{background:rgba(255,204,51,.1)}
-.pwm-row b{font-size:17px}
-.pwm-row .lv{font-size:12px;opacity:.75;margin-left:4px}
-.pwm-row small{display:block;font-size:12px;opacity:.75;font-weight:400}
-.pwm-cost{color:var(--gold);font-weight:700;white-space:nowrap;align-self:center}
-.pwm-foot{margin-top:10px;font-size:12px;opacity:.55;text-align:center}
-/* ---------- mobile build: compact hud, touch controls ---------- */
-html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-#look{position:fixed;inset:0;z-index:1;touch-action:none}
-#hud{left:calc(8px + env(safe-area-inset-left,0px));top:calc(96px + env(safe-area-inset-top,0px));padding:4px 9px 5px 8px;font-size:12px;border-left-width:2px;backdrop-filter:blur(3px)}
-#mode{font-size:13px}
-#hud small{font-size:10px;margin-right:6px;opacity:.75}
-#stats{right:calc(8px + env(safe-area-inset-right,0px));top:calc(52px + env(safe-area-inset-top,0px));width:146px;padding:5px 8px;font-size:11px;line-height:1.2;border-right-width:2px;backdrop-filter:blur(3px)}
-#sc{font-size:11px}
-#ci,#ex,#hint{display:none}
-.bar{height:6px}
-#vitals{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(240px,44vw);display:flex;gap:8px;padding:3px 8px;background:rgba(7,18,46,.5);border-radius:6px;backdrop-filter:blur(3px);pointer-events:none;z-index:2}
-#vitals .meter{flex:1;gap:4px;font-size:9px;line-height:1.2}
-#vitals .bar{height:5px}
-#mm{left:calc(8px + env(safe-area-inset-left,0px));right:auto;top:calc(8px + env(safe-area-inset-top,0px));width:80px;height:80px}
-#boss{top:calc(32px + env(safe-area-inset-top,0px));width:min(300px,46vw);font-size:14px}
-#boss .bar{height:8px}
-#banner{left:auto;right:calc(8px + env(safe-area-inset-right,0px));top:calc(80px + env(safe-area-inset-top,0px));text-align:right;max-width:44vw;font-size:clamp(15px,3vw,22px)}
-#sub{left:calc(8px + env(safe-area-inset-left,0px));right:auto;bottom:calc(160px + env(safe-area-inset-bottom,0px));transform:none;text-align:left;max-width:40vw;font-size:11px;padding:2px 8px;z-index:2}
-#arrow{left:calc(8px + env(safe-area-inset-left,0px));right:auto;top:50%;bottom:auto;transform:translateY(-50%);text-align:left;display:none;align-items:center;gap:4px;z-index:2}
-#tsfx{z-index:0}
-#go,#pwbtn{font-size:20px}
-#go{padding:10px 30px}
-#pwbtn{padding:10px 20px}
-#start{z-index:20;justify-content:flex-start;padding:14px;padding-top:calc(18px + env(safe-area-inset-top,0px));gap:6px;overflow:auto;touch-action:pan-y}
-#start h1{font-size:clamp(38px,11vw,88px)}
-#start p{font-size:14px;max-width:620px}
-#start .keys{font-size:11.5px;line-height:1.45}
-#start .btns{margin-top:8px}
-#settings{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:11px}
-.srow{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
-.srow>span{width:58px;text-align:right;opacity:.75;font-weight:700;letter-spacing:.04em}
-.srow button{font:700 11px/1 'Barlow Condensed','Segoe UI',Tahoma,'Arial Narrow',Arial,sans-serif;padding:7px 9px;min-width:46px;border:1px solid rgba(255,255,255,.3);border-radius:4px;background:rgba(7,18,46,.6);color:var(--paper);cursor:pointer;touch-action:manipulation}
-.srow button.on{border-color:var(--gold);background:var(--gold);color:var(--ink)}
-.srow input[type=range]{width:150px;height:18px;accent-color:var(--gold);touch-action:none}
-.srow .sv{width:26px;text-align:left;opacity:.8;font-weight:700}
-#pwm{width:min(560px,94vw);max-height:76vh;padding:12px 14px;font-size:13px;z-index:21;touch-action:pan-y}
-.pwm-head{font-size:18px;margin-bottom:4px}
-.pwm-head #pwx{font:700 18px/1 'Barlow Condensed',sans-serif;width:34px;height:34px;border:1px solid var(--gold);border-radius:5px;background:transparent;color:var(--gold)}
-.pwm-row{padding:9px 4px}
-.pwm-row b{font-size:14px}
-.pwm-row small,#pwp{font-size:11px}
-.pwm-foot{font-size:10px}
-#stick{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:132px;height:132px;border-radius:50%;background:rgba(7,18,46,.35);border:2px solid rgba(255,255,255,.22);z-index:12;touch-action:none}
-#knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,204,51,.5);border:2px solid rgba(255,204,51,.85);pointer-events:none}
-#stick.sprint #knob{background:rgba(255,110,50,.6);border-color:#ff8a3a}
-#pad{position:fixed;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));width:330px;height:330px;z-index:12;pointer-events:none}
-.ab{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.32);border-radius:50%;background:rgba(7,18,46,.6);color:var(--paper);touch-action:none;backdrop-filter:blur(3px);-webkit-appearance:none;appearance:none;pointer-events:auto}
-.ab svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.p2{width:32px;height:32px}
-.p2 svg{width:16px;height:16px}
-.p2 .cd{min-width:14px;height:14px;padding:0 2px;font-size:9px;line-height:12px;top:-2px;right:-2px}
-.ab .ico2{display:none}
-.ab.alt .ico1{display:none}
-.ab.alt .ico2{display:block}
-.ab .cd{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:var(--ink);border:1px solid currentColor;font:700 10px/15px 'Barlow Condensed','Segoe UI',Tahoma,'Arial Narrow',Arial,sans-serif;text-align:center;display:none}
-.ab .cd.on{display:block}
-.ab.on{background:rgba(255,204,51,.5);color:var(--ink)}
-.ab.off svg{opacity:.35}
-#bFire{border-color:#ff4a55;background:rgba(217,38,44,.5)}
-#bPunch{border-color:var(--gold)}
-#bJump{border-color:#66ccff;background:rgba(20,80,140,.5)}
-#bJump{width:56px;height:56px;border-width:2px}
-#bJump svg{width:28px;height:28px}
-#bPunch{left:50%;top:calc(50% + 78px)}
-#bFire{left:calc(50% + 39px);top:calc(50% + 68px)}
-#bDive{left:calc(50% + 68px);top:calc(50% + 39px)}
-#bSlam{left:calc(50% + 78px);top:50%}
-#bDash{left:50%;top:calc(50% + 150px)}
-#bGrab{left:calc(50% + 39px);top:calc(50% + 145px)}
-#bCall{left:calc(50% + 75px);top:calc(50% + 130px)}
-#bLock{left:calc(50% + 106px);top:calc(50% + 106px)}
-#bIce{left:calc(50% + 130px);top:calc(50% + 75px)}
-#bNova{left:calc(50% + 145px);top:calc(50% + 39px)}
-#bTime{left:calc(50% + 150px);top:50%}
-#bPause{position:fixed;right:calc(8px + env(safe-area-inset-right,0px));top:calc(8px + env(safe-area-inset-top,0px));width:44px;height:34px;z-index:13;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--gold);border-radius:6px;background:rgba(7,18,46,.55);color:var(--gold);touch-action:none}
-#bPause svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-/* landscape: compact hud, tighter corners, controls clear of messages */
-@media (orientation:landscape){
- #hud{top:calc(84px + env(safe-area-inset-top,0px));padding:3px 8px}
- #mode{font-size:11px;margin:0 0 1px}
- #hud small{font-size:9px;margin-right:4px}
- #stats{top:calc(44px + env(safe-area-inset-top,0px));width:130px;font-size:10px}
- #vitals{top:calc(6px + env(safe-area-inset-top,0px));width:min(220px,46vw)}
- #mm{top:calc(8px + env(safe-area-inset-top,0px));width:70px;height:70px}
- #banner{top:calc(70px + env(safe-area-inset-top,0px));font-size:clamp(14px,2.4vw,20px)}
- #sub{bottom:calc(140px + env(safe-area-inset-bottom,0px));max-width:38vw}
- #stick{width:116px;height:116px}
- #knob{width:48px;height:48px;margin:-24px 0 0 -24px}
- #bPause{width:38px;height:30px}
-}
-@media (orientation:portrait){#pad{transform:scale(.74);transform-origin:bottom right}}
-@media (max-height:340px){
- #pad{transform:scale(.85);transform-origin:bottom right}
- #stats{width:96px}
-}
-</style>
-</head>
-<body>
-<div id="speed"></div><div id="tsfx" style="position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:rgba(110,140,190,.22);backdrop-filter:grayscale(.8) contrast(1.1);-webkit-backdrop-filter:grayscale(.8) contrast(1.1)"></div>
-<div id="hud"><span id="mode">على الأرض</span><small id="alt"></small><small id="spd"></small></div>
-<div id="flash"></div><div id="cross"></div><div id="banner"></div>
-<div id="stats"><div id="sc"></div><div id="ci"></div><div id="ex"></div></div>
-<div id="vitals"><div class="meter hp"><span>صحة</span><div class="bar"><i id="hp"></i></div></div><div class="meter en"><span>طاقة</span><div class="bar"><i id="en"></i></div></div></div>
-<div id="arrow"><div id="ar">▲</div><small id="ad"></small></div>
-<div id="boss"><div id="bn"></div><div class="bar"><i id="bf"></i></div></div>
-<canvas id="mm" width="180" height="180"></canvas><div id="sub"></div><div id="lk" style="position:fixed;display:none;width:56px;height:56px;margin:-28px 0 0 -28px;border:3px solid #ff4a55;border-radius:6px;box-shadow:0 0 12px #ff4a55;pointer-events:none"><span id="lkn" style="position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px;font-weight:700;color:#ff8a90;text-shadow:0 2px 6px #000"></span></div>
-<div id="look"></div>
-<div id="stick"><i id="knob"></i></div>
-<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
- <symbol id="i-time" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
- <symbol id="i-nova" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3.5M12 18.5V22M2 12h3.5M18.5 12H22M4.9 4.9l2.5 2.5M16.6 16.6l2.5 2.5M19.1 4.9l-2.5 2.5M7.4 16.6l-2.5 2.5"/></symbol>
- <symbol id="i-ice" viewBox="0 0 24 24"><path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5M2 12l2.5-2.5M2 12l2.5 2.5M22 12l-2.5-2.5M22 12l-2.5 2.5"/></symbol>
- <symbol id="i-lock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></symbol>
- <symbol id="i-unlock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M4 4l16 16"/></symbol>
- <symbol id="i-call" viewBox="0 0 24 24"><path d="M12 22s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z"/><circle cx="12" cy="11" r="2.5"/></symbol>
- <symbol id="i-dash" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M13 6l6 6-6 6"/></symbol>
- <symbol id="i-grab" viewBox="0 0 24 24"><path d="M6 3v8a6 6 0 0 0 12 0V3M6 3h4M14 3h4M6 8h4M14 8h4"/></symbol>
- <symbol id="i-throw" viewBox="0 0 24 24"><path d="M3 12h13M12 8l4 4-4 4M3 5v14"/></symbol>
- <symbol id="i-slam" viewBox="0 0 24 24"><path d="M12 3v10M8 9l4 4 4-4M4 19h16M7 15l-2 4M17 15l2 4"/></symbol>
- <symbol id="i-fly" viewBox="0 0 24 24"><path d="M12 21V4M7 9l5-5 5 5M7 15l5-5 5 5"/></symbol>
- <symbol id="i-dive" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M9 3h6M4 20h16"/></symbol>
- <symbol id="i-punch" viewBox="0 0 24 24"><path d="M6 11V8a1.5 1.5 0 0 1 3 0v3M9 11V6a1.5 1.5 0 0 1 3 0v5M12 11V6.5a1.5 1.5 0 0 1 3 0V11M15 11V8a1.5 1.5 0 0 1 3 0v7a5 5 0 0 1-5 5h-1.5a5 5 0 0 1-4.3-2.5L5 14.5a1.6 1.6 0 0 1 2.5-2L9 14"/></symbol>
- <symbol id="i-fire" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
- <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
-</svg>
-<div id="pad">
-  <button class="ab p2" id="bTime" aria-label="إيقاف الزمن"><svg class="ico1"><use href="#i-time"/></svg><b class="cd"></b></button><button class="ab p2" id="bNova" aria-label="نوفا شمسية"><svg class="ico1"><use href="#i-nova"/></svg><b class="cd"></b></button><button class="ab p2" id="bIce" aria-label="نفس الجليد"><svg class="ico1"><use href="#i-ice"/></svg><b class="cd"></b></button><button class="ab p2" id="bLock" aria-label="قفل الهدف"><svg class="ico1"><use href="#i-lock"/></svg><svg class="ico2"><use href="#i-unlock"/></svg></button>
-  <button class="ab p2" id="bCall" aria-label="تتبع الإنقاذ التالي"><svg class="ico1"><use href="#i-call"/></svg></button><button class="ab p2" id="bDash" aria-label="اندفاع"><svg class="ico1"><use href="#i-dash"/></svg><b class="cd"></b></button><button class="ab p2" id="bGrab" aria-label="التقاط أو رمي"><svg class="ico1"><use href="#i-grab"/></svg><svg class="ico2"><use href="#i-throw"/></svg></button><button class="ab" id="bSlam" aria-label="ضربة أرضية"><svg class="ico1"><use href="#i-slam"/></svg></button>
-  <button class="ab" id="bJump" aria-label="قفز، اضغط مجدداً للطيران"><svg class="ico1"><use href="#i-fly"/></svg></button><button class="ab" id="bDive" aria-label="هبوط"><svg class="ico1"><use href="#i-dive"/></svg></button><button class="ab" id="bPunch" aria-label="لكمة"><svg class="ico1"><use href="#i-punch"/></svg></button><button class="ab" id="bFire" aria-label="ليزر العينين"><svg class="ico1"><use href="#i-fire"/></svg></button>
-</div>
-<button id="bPause" aria-label="إيقاف مؤقت"><svg><use href="#i-pause"/></svg></button>
-<div id="hint">Esc إيقاف مؤقت والترقيات · Z إيقاف الزمن · G نوفا شمسية · R الجليد · T قفل · V تتبع النداء · N الموسيقى · M كتم · ] تخطي الشرير</div>
-<div id="start">
-  <h1>إيجيس</h1>
-  <p>مدافع عن المدينة. الفضائيون يغزونها. احمِ المواطنين واصمد في كل موجة. في كل موجة خامسة يظهر شرير.</p>
-  <p class="keys">العصا اليسرى للحركة، ادفعها للحافة للجري · اسحب في أي مكان للنظر · FIRE يطلق ليزر عينيك · PUNCH<br>اضغط FLY للقفز، واضغط مرة أخرى واستمر للطيران، DIVE للهبوط · اضغط GRAB لالتقاط سيارة أو رميها، SLAM يضرب الأرض<br>TIME إيقاف الزمن · NOVA · ICE · LOCK، اضغط مرة أخرى لفتح القفل · CALL يتتبع الإنقاذ التالي<br>PAUSE (أعلى اليمين) ثم الترقيات لإنفاق النقاط على ترقيات لا نهائية · استخدم الوضع الأفقي والصوت للتجربة الكاملة</p>
-  <div class="btns"><button id="go">انطلق</button><button id="pwbtn">الترقيات</button></div>
-  <div id="settings">
-    <div class="srow"><span>الموسيقى</span><input type="range" data-k="music" min="0" max="100" step="1" aria-label="مستوى الموسيقى"><b class="sv">50</b></div>
-    <div class="srow"><span>الصوت</span><input type="range" data-k="voice" min="0" max="100" step="1" aria-label="مستوى الصوت"><b class="sv">90</b></div>
-    <div class="srow"><span>الرسوميات</span><button data-k="gfx" data-v="high">عالٍ</button><button data-k="gfx" data-v="medium">متوسط</button><button data-k="gfx" data-v="low">منخفض</button><button data-k="gfx" data-v="potato">بطاطا</button></div>
-    <div class="srow"><span>الوضع</span><button data-k="mode" data-v="easy">سهل</button><button data-k="mode" data-v="medium">متوسط</button><button data-k="mode" data-v="hard">صعب</button><button data-k="mode" data-v="nightmare">كابوس</button></div>
-  </div>
-  <div id="pwm">
-    <div class="pwm-head"><span>الترقيات</span><span id="pwp"></span><button id="pwx" aria-label="إغلاق">×</button></div>
-    <div id="pwlist"></div>
-    <div class="pwm-foot">اضغط صفاً للشراء · المفاتيح 1-5 تعمل أيضاً · اضغط × للإغلاق</div>
-  </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
 (function(){
 const T=THREE,$=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const MOBILE=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
+const touchUI=!!$('pad');
 const joy={x:0,y:0,on:false};
 const GV={high:2,medium:1.5,low:1,potato:.75},GF={high:1,medium:.85,low:.65,potato:.5};
 const DIF={easy:{hp:.75,dmg:.6,sp:-2},medium:{hp:1,dmg:1,sp:0},hard:{hp:1.25,dmg:1.35,sp:2},nightmare:{hp:1.6,dmg:1.8,sp:4}};
@@ -212,7 +10,7 @@ const la=(a,b,t)=>{const d=(((b-a+Math.PI)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)-M
 
 // ---------- renderer, scene, sky ----------
 const renderer=new T.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,GV[SET.gfx]||2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,touchUI?GV[SET.gfx]||2:2));
 renderer.setSize(innerWidth,innerHeight);
 document.body.prepend(renderer.domElement);
 const cv=renderer.domElement;
@@ -337,13 +135,13 @@ addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='Space'||e.code.startsWith('Arrow'))e.preventDefault()});
 addEventListener('keyup',e=>keys[e.code]=0);
 addEventListener('blur',()=>{for(const k in keys)keys[k]=0});
-function lock(){if(MOBILE)return;try{const p=cv.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-$('go').onclick=()=>{$('start').style.display='none';openPWM(false);started=true;lock();audioInit();say('hero','إيجيس جاهز. احمِ المدينة!',1,0)};
+function lock(){try{const p=cv.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+$('go').onclick=()=>{$('start').style.display='none';openPWM(false);started=true;lock();audioInit();say('hero','Aegis online. Protect the city!',1,0)};
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===cv;
- if(!locked&&wasLocked&&started){$('start').style.display='flex';$('go').textContent='متابعة';started=false}wasLocked=locked});
-cv.addEventListener('mousedown',()=>{if(MOBILE)return;drag=true;if(started&&!locked)lock()});
+ if(!locked&&wasLocked&&started){$('start').style.display='flex';$('go').textContent='Resume';started=false}wasLocked=locked});
+cv.addEventListener('mousedown',()=>{drag=true;if(started&&!locked)lock()});
 addEventListener('mouseup',()=>drag=false);
-addEventListener('mousemove',e=>{if(!MOBILE&&started&&(locked||drag)){yaw-=e.movementX*.0024;pitch=clamp(pitch+e.movementY*.0024,-1.3,1.4)}});
+addEventListener('mousemove',e=>{if(started&&(locked||drag)){yaw-=e.movementX*.0024;pitch=clamp(pitch+e.movementY*.0024,-1.3,1.4)}});
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
 
 // ---------- physics ----------
@@ -417,17 +215,17 @@ function animate(dt,t){
  $('speed').style.opacity=(fovK*.85).toFixed(2);
  sky.position.copy(cam.position);
  // hud
- $('mode').textContent=flying?(speedS>45?'طيران فائق السرعة':'تحلق'):(speedS>20?'جري فائق السرعة':'على الأرض');
- $('alt').textContent='الارتفاع '+Math.round(pos.y)+' م';
- $('spd').textContent='السرعة '+Math.round(sp*3.6)+' كم/س';
+ $('mode').textContent=flying?(speedS>45?'Super speed flight':'Flying'):(speedS>20?'Super speed run':'On the ground');
+ $('alt').textContent='Altitude '+Math.round(pos.y)+' m';
+ $('spd').textContent='Speed '+Math.round(sp*3.6)+' km/h';
 }
 
 // ---------- Part 2: powers, citizens, enemies ----------
 let firing=false,punchCd=0,punchT=0,laserE=100,heat=false,hp=100,hurtT=0,score=0,wave=0,waveT=4,lost=0,shake=0,bannerT=0,flash=0,cleared=false;
 const enemies=[],citizens=[],bolts=[],D=new T.Vector3(),O=new T.Vector3(),E1=new T.Vector3(),E2=new T.Vector3(),END=new T.Vector3();
 const banner=s=>{$('banner').textContent=s;$('banner').style.opacity=1;bannerT=2.6};
-addEventListener('mousedown',e=>{if(MOBILE||!started)return;if(e.button===0)firing=true;if(e.button===2)punch()});
-addEventListener('mouseup',e=>{if(!MOBILE&&e.button===0)firing=false});
+addEventListener('mousedown',e=>{if(!started)return;if(e.button===0)firing=true;if(e.button===2)punch()});
+addEventListener('mouseup',e=>{if(e.button===0)firing=false});
 addEventListener('contextmenu',e=>e.preventDefault());
 const solid=(x,y,z)=>{if(y<0)return true;for(const b of buildings)if(y<b.h&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true;return false};
 const topAt=(x,z)=>{let h=0;for(const b of buildings)if(x>b.x0-4&&x<b.x1+4&&z>b.z0-4&&z<b.z1+4)h=Math.max(h,b.h);return h};
@@ -467,7 +265,7 @@ function punch(){
  for(const e of enemies){E1.subVectors(e.g.position,pos);const d=E1.length();if(d<7+e.k.r&&E1.dot(D)/d>.35){e.hp-=45*(dmgT>0?2:1);e.kb.copy(E1).normalize().multiplyScalar(30);burst(e.g.position,14,14);shake=.35}}
 }
 // enemies
-const TYPES={drone:{hp:40,r:1.3,pts:60,fly:1,spd:14,rate:1.4,dmg:6},soldier:{hp:70,r:1.2,pts:100,spd:6,rate:1.8,dmg:8},saucer:{hp:180,r:3.2,pts:250,fly:1,spd:8,rate:.9,dmg:10},brute:{hp:260,r:1.9,pts:300,spd:4.5,rate:2.2,dmg:16},crasher:{hp:30,r:1.1,pts:90,fly:1,spd:26,rate:99,dmg:0},guardian:{hp:320,r:1.7,pts:350,spd:5,rate:2.4,dmg:12},titan:{name:'التايتن',boss:1,stand:12,hp:900,r:3.2,pts:1500,spd:7,rate:2,dmg:18},blade:{name:'سكاي بليد',boss:1,fly:1,stand:45,hp:700,r:2.2,pts:1800,spd:16,rate:.7,dmg:9},mother:{name:'سفينة الأم فور',boss:1,fly:1,stand:60,hp:1600,r:9,pts:3000,spd:5,rate:1.2,dmg:12}};
+const TYPES={drone:{hp:40,r:1.3,pts:60,fly:1,spd:14,rate:1.4,dmg:6},soldier:{hp:70,r:1.2,pts:100,spd:6,rate:1.8,dmg:8},saucer:{hp:180,r:3.2,pts:250,fly:1,spd:8,rate:.9,dmg:10},brute:{hp:260,r:1.9,pts:300,spd:4.5,rate:2.2,dmg:16},crasher:{hp:30,r:1.1,pts:90,fly:1,spd:26,rate:99,dmg:0},guardian:{hp:320,r:1.7,pts:350,spd:5,rate:2.4,dmg:12},titan:{name:'The Titan',boss:1,stand:12,hp:900,r:3.2,pts:1500,spd:7,rate:2,dmg:18},blade:{name:'Skyblade',boss:1,fly:1,stand:45,hp:700,r:2.2,pts:1800,spd:16,rate:.7,dmg:9},mother:{name:'Mothership Vorr',boss:1,fly:1,stand:60,hp:1600,r:9,pts:3000,spd:5,rate:1.2,dmg:12}};
 const AL=(c,e)=>FL(c,e),GL=c=>new T.MeshBasicMaterial({color:c});
 function tri(a,m){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(a,3));g.computeVertexNormals();return new T.Mesh(g,m)}
 function buildEnemy(t,g){
@@ -511,15 +309,15 @@ function spawnWave(){wave++;shield=Math.max(shield,lv[4]);objNew();spawnHook();c
  for(let i=0;i<n;i++){const r=Math.random(),type=wave>2&&r<.08?'guardian':wave>1&&r<.18?'crasher':wave>3&&r<.26?'brute':wave>2&&r<.4?'saucer':r<.65?'soldier':'drone',a=Math.random()*6.28,d=110+Math.random()*90;
   let x=pos.x+Math.sin(a)*d,z=pos.z+Math.cos(a)*d;if(type==='soldier'||type==='brute'||type==='guardian'){const q=roadPt();x=q[0];z=q[1]}
   mkEnemy(type,clamp(x,-380,380),clamp(z,-380,380))}
- while(cars.length<26)mkCar();banner(bw?'الموجة '+wave+': وصل شرير!':'الموجة '+wave+': غزو فضائي');waveVoice();
- setTimeout(()=>say('alien',pk(['من أجل السرب!','اسحقوهم!']),0,0),2600);
- setTimeout(()=>say('cit',pk(['النجدة! ساعدونا!',"اهربوا! لقد وصلوا!"]),0,0),5400);
+ while(cars.length<26)mkCar();banner(bw?'Wave '+wave+': a villain arrives!':'Wave '+wave+': alien invasion');waveVoice();
+ setTimeout(()=>say('alien',pk(['For the swarm!','Crush them!']),0,0),2600);
+ setTimeout(()=>say('cit',pk(['Help! Somebody help us!',"Run! They're here!"]),0,0),5400);
 }
 const boltG=new T.SphereGeometry(.35,6,6),boltM=GL(0x9aff3a);
-function shoot(from,to,spd,dmg){if(Math.random()<.06)say('alien',pk(['اقتلوا البطل!','سكري!','من أجل السرب!','اسحقوهم!']),0,6000);tone(180+Math.random()*60,.1,.04,'square');const m=new T.Mesh(boltG,boltM);m.position.copy(from);scene.add(m);
+function shoot(from,to,spd,dmg){if(Math.random()<.06)say('alien',pk(['Kill the hero!','Skree!','For the swarm!','Crush them!']),0,6000);tone(180+Math.random()*60,.1,.04,'square');const m=new T.Mesh(boltG,boltM);m.position.copy(from);scene.add(m);
  const v=new T.Vector3().subVectors(to,from).normalize();v.x+=(Math.random()-.5)*.06;v.y+=(Math.random()-.5)*.06;v.z+=(Math.random()-.5)*.06;
  bolts.push({m,v:v.normalize().multiplyScalar(spd),dmg,life:4})}
-function hurt(d){if(shield>0){shield--;ring(pos,5,0x66ccff);tone(660,.15,.12,'sine');flash=.2;return}if(ob&&ob.k==='nohit')ob.fail=1;hp-=d*up.d*DIF[SET.mode].dmg;if(hp<30)say('hero','يجب أن أصمد!',0,9000);tone(90,.2,.2,'sawtooth');hurtT=5;flash=.6;shake=Math.max(shake,.15)}
+function hurt(d){if(shield>0){shield--;ring(pos,5,0x66ccff);tone(660,.15,.12,'sine');flash=.2;return}if(ob&&ob.k==='nohit')ob.fail=1;hp-=d*up.d*DIF[SET.mode].dmg;if(hp<30)say('hero','I need to hold on!',0,9000);tone(90,.2,.2,'sawtooth');hurtT=5;flash=.6;shake=Math.max(shake,.15)}
 function updEnemies(dt0){let dt=dt0;
  for(let i=enemies.length-1;i>=0;i--){
   const e=enemies[i],g=e.g,k=e.k,gp=g.position;dt=dt0;if(e.fr>0){e.fr-=dt0;dt=dt0*.12;e.bar.material.color.setHex(0x66ccff)}else e.bar.material.color.setHex(0x40ff60);
@@ -528,20 +326,20 @@ function updEnemies(dt0){let dt=dt0;
   if(hd>stand){gp.x+=dx/hd*k.spd*dt;gp.z+=dz/hd*k.spd*dt}
   const sd=Math.sin(tm*1.2+e.ph)*k.spd*.8;gp.x+=-dz/hd*sd*dt;gp.z+=dx/hd*sd*dt;
   gp.addScaledVector(e.kb,dt);e.kb.multiplyScalar(Math.exp(-3*dt));
-  if(e.type==='crasher'){const ty=tgt.y+1;gp.y+=(ty-gp.y)*Math.min(1,dt*1.6);if(gp.distanceTo(E1.set(tgt.x,ty,tgt.z))<2.6){if(tgt===pos)hurt(22);else{const j=citizens.findIndex(c=>c.g.position===tgt);if(j>=0){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','آه! لا أرجوك!',0,1500)}}ring(gp,8,0xff7030);burst(gp,40,20);areaB(gp,10,120);e.suicide=1;e.hp=0}}else if(k.fly){const ty=Math.max(e.y0,topAt(gp.x,gp.z)+8);gp.y+=(ty-gp.y)*Math.min(1,dt*2)}else{gp.y=0;pushOut(gp,1)}
+  if(e.type==='crasher'){const ty=tgt.y+1;gp.y+=(ty-gp.y)*Math.min(1,dt*1.6);if(gp.distanceTo(E1.set(tgt.x,ty,tgt.z))<2.6){if(tgt===pos)hurt(22);else{const j=citizens.findIndex(c=>c.g.position===tgt);if(j>=0){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','Aaah! No, please!',0,1500)}}ring(gp,8,0xff7030);burst(gp,40,20);areaB(gp,10,120);e.suicide=1;e.hp=0}}else if(k.fly){const ty=Math.max(e.y0,topAt(gp.x,gp.z)+8);gp.y+=(ty-gp.y)*Math.min(1,dt*2)}else{gp.y=0;pushOut(gp,1)}
   if(e.type==='saucer'||e.type==='mother')g.rotation.y+=dt*2;else g.rotation.y=Math.atan2(-dx,-dz);
   e.bar.visible=!e.boss&&e.hp<e.max;e.bar.scale.x=Math.max(.01,2.4*e.hp/e.max);
   e.fire-=dt;
   if(e.fire<=0&&hd<70&&e.type!=='crasher'){e.fire=k.rate*(.8+Math.random()*.5);E1.set(gp.x,gp.y+(k.fly?0:1.5),gp.z);E2.set(tgt.x,tgt.y+1,tgt.z);for(let n=e.type==='saucer'||e.type==='mother'?3:1;n>0;n--)shoot(E1,E2,k.fly?38:42,k.dmg)}
   if(e.boss)boss(e,dt);
-  if(e.hp<=0){burst(gp,40,18);if(e.boss){ring(gp,20,0xffa040);burst(gp,150,35);say(e.type,pk(['لا... مستحيل!','لم ينتهِ الأمر!']),1,0);setTimeout(()=>say('hero','سقط تهديد آخر.',0,0),2200);banner(e.type==='mother'?'المدينة أُنقذت! الوضع اللانهائي مستمر':'هُزم الشرير! +'+k.pts);hp=Math.min(100,hp+50)}scene.remove(g);if(e.fr>0&&sk.ice>=3)shatter(gp);if(!e.suicide){score+=Math.round(k.pts*combo);bumpCombo();dropPU(gp)}enemies.splice(i,1);shake=.4}
+  if(e.hp<=0){burst(gp,40,18);if(e.boss){ring(gp,20,0xffa040);burst(gp,150,35);say(e.type,pk(['No... impossible!','This is not over!']),1,0);setTimeout(()=>say('hero','Another threat down.',0,0),2200);banner(e.type==='mother'?'The city is saved! Endless mode continues':'Villain defeated! +'+k.pts);hp=Math.min(100,hp+50)}scene.remove(g);if(e.fr>0&&sk.ice>=3)shatter(gp);if(!e.suicide){score+=Math.round(k.pts*combo);bumpCombo();dropPU(gp)}enemies.splice(i,1);shake=.4}
  }
 }
 function updBolts(dt){if(!dt)return;
  for(let i=bolts.length-1;i>=0;i--){
   const b=bolts[i],p=b.m.position;p.addScaledVector(b.v,dt);b.life-=dt;let dead=b.life<=0;
   if(!dead&&p.distanceToSquared(E1.set(pos.x,pos.y+1,pos.z))<1.7){hurt(b.dmg);dead=true}
-  if(!dead)for(let j=citizens.length-1;j>=0;j--){const c=citizens[j].g.position;if(Math.abs(p.x-c.x)<.7&&Math.abs(p.z-c.z)<.7&&p.y<2){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','آه! لا أرجوك!',0,1500);burst(p,12,10);dead=true;break}}
+  if(!dead)for(let j=citizens.length-1;j>=0;j--){const c=citizens[j].g.position;if(Math.abs(p.x-c.x)<.7&&Math.abs(p.z-c.z)<.7&&p.y<2){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','Aaah! No, please!',0,1500);burst(p,12,10);dead=true;break}}
   if(!dead&&solid(p.x,p.y,p.z)){burst(p,4,8);hitB(p,b.dmg*.6);dead=true}
   if(dead){scene.remove(b.m);bolts.splice(i,1)}
  }
@@ -613,23 +411,23 @@ function spawnRescue(){
  const bc=new T.Mesh(bcG,fall?bmR:bmY);bc.position.y=40;g.add(bc);
  g.position.set(fall?b.x1+1.5:(b.x0+b.x1)/2,b.h,(b.z0+b.z1)/2);scene.add(g);
  rescues.push({g,bc,fall,vy:0,t:75,pts:fall?300:200,kind:fall?'fall':'roof'});
- banner(fall?'مواطن يسقط! أمسكه!':'مواطن عالق على سطح مبنى!')}
+ banner(fall?'Citizen falling! Catch them!':'Citizen stranded on a rooftop!')}
 function updRescues(dt){
  if(enemies.length&&(rescueT-=dt)<=0&&rescues.length<3){rescueT=14+Math.random()*8;spawnRescue()}
  for(let i=rescues.length-1;i>=0;i--){const r=rescues[i],p=r.g.position;let gone=0;
   if(r.fall){r.vy-=12*dt;p.y+=r.vy*dt;if(p.y<=0)gone=1}else if((r.t-=dt)<=0)gone=1;
-  if(gone){lost++;say('cit','آه! لا أرجوك!',0,1500);burst(p,10,8);scene.remove(r.g);rescues.splice(i,1);banner('فُقد مواطن');continue}
+  if(gone){lost++;say('cit','Aaah! No, please!',0,1500);burst(p,10,8);scene.remove(r.g);rescues.splice(i,1);banner('Citizen lost');continue}
   if(!carrying&&Math.hypot(p.x-pos.x,p.z-pos.z)<3.5&&Math.abs(p.y+.8-pos.y-1)<3){carrying=r;r.g.remove(r.bc);rescues.splice(i,1)}}}
 function updCarry(){
  if(!carrying)return;
  carrying.g.position.set(pos.x-Math.sin(face)*.6,pos.y+.9,pos.z-Math.cos(face)*.6);
- if(Math.hypot(pos.x,pos.z)<ZONE.r&&pos.y<15){const r=carrying,a=Math.random()*6.28,d=Math.random()*9;carrying=null;r.g.position.set(Math.sin(a)*d,0,Math.cos(a)*d);citizens.push({g:r.g,dir:a,t:1});rescued++;score+=r.pts;burst(r.g.position,20,12);banner('أُنقذ! +'+r.pts);say('cit',pk(['شكراً لك يا إيجيس!','لقد أنقذتني!','بطلي!']),1,0);tone(880,.25,.15,'sine');setTimeout(()=>tone(1320,.35,.15,'sine'),120)}}
+ if(Math.hypot(pos.x,pos.z)<ZONE.r&&pos.y<15){const r=carrying,a=Math.random()*6.28,d=Math.random()*9;carrying=null;r.g.position.set(Math.sin(a)*d,0,Math.cos(a)*d);citizens.push({g:r.g,dir:a,t:1});rescued++;score+=r.pts;burst(r.g.position,20,12);banner('Rescued! +'+r.pts);say('cit',pk(['Thank you, Aegis!','You saved me!','My hero!']),1,0);tone(880,.25,.15,'sine');setTimeout(()=>tone(1320,.35,.15,'sine'),120)}}
 // ---------- Part 5: villain bosses ----------
 const bBeam=new T.Mesh(beamG,new T.MeshBasicMaterial({color:0xff8a20,transparent:true,opacity:.6,depthWrite:false}));bBeam.visible=false;scene.add(bBeam);
 function bossBeam(from,dir,w,len){END.copy(from).addScaledVector(dir,len);if(!(ts>0))areaB(END,6,1.2);bBeam.visible=true;bBeam.position.addVectors(from,END).multiplyScalar(.5);bBeam.scale.set(w,w,len);bBeam.lookAt(END)}
 function boss(e,dt){
  const k=e.k,g=e.g,gp=g.position,ph=e.hp<e.max*.33?3:e.hp<e.max*.66?2:1;
- if(ph>(e.phase||1)){e.phase=ph;banner(k.name+': المرحلة '+ph);say(e.type,pk(PL[e.type]),1,0);shake=.8;burst(gp,40,20)}
+ if(ph>(e.phase||1)){e.phase=ph;banner(k.name+': phase '+ph);say(e.type,pk(PL[e.type]),1,0);shake=.8;burst(gp,40,20)}
  if(e.st===0){
   if((e.stT-=dt)<=0){e.st=1;e.pw=e.type==='blade'?1.3:1;if(e.type==='blade')e.aim=new T.Vector3(pos.x,pos.y+1,pos.z).sub(gp).normalize()}
  }else if(e.st===1){
@@ -697,98 +495,97 @@ function game(dt){
  const wdt=ts>0?0:dt;tm+=dt;slamCd-=dt;punchCd-=dt;if(flying)slam=false;if(slam&&grounded){slam=false;shock(pos,16,80)}updRings(dt);shake*=Math.exp(-dt*6);flash*=Math.exp(-dt*4);hurtT-=dt;
  if(hurtT<0&&hp<100)hp=Math.min(100,hp+6*dt);
  if(!enemies.length){
-  if(!cleared){cleared=true;waveT=wave>0?16:4;if(wave>0){say('hero',pk(['المنطقة آمنة. عمل جيد.','هؤلاء كلهم. المواطنون بأمان.']),0,0);objEnd();hp=100;score+=50*citizens.length+cityBonus();banner('الموجة '+wave+' تم صدها. '+citizens.length+' مواطناً أُنقذوا، المدينة '+intgPct()+'%');waveDone()}}
+  if(!cleared){cleared=true;waveT=wave>0?16:4;if(wave>0){say('hero',pk(['Area clear. Good work.','That is all of them. The citizens are safe.']),0,0);objEnd();hp=100;score+=50*citizens.length+cityBonus();banner('Wave '+wave+' cleared. '+citizens.length+' citizens saved, city '+intgPct()+'%');waveDone()}}
   else if((waveT-=dt)<=0){cleared=false;while(citizens.length<26)mkCit();spawnWave()}
  }
  laser(dt);updFires(dt);p7(dt);updEnemies(wdt);updBolts(wdt);updCits(wdt);updCars(dt);updRescues(wdt);updCarry();
  if(held){armL.rotation.x=armR.rotation.x=Math.PI}
  if(punchT>0){punchT-=dt;armR.rotation.x=1.57;armR.rotation.z=0}
- if(hp<=0){hp=100;pos.set(0,1.2,0);vel.set(0,0,0);flying=false;slam=false;if(carrying){scene.remove(carrying.g);carrying=null;lost++}if(held){held.st=0;held.g.position.y=0;held=null}score=Math.floor(score*.75);flash=1;banner('أُصبت. عدت إلى القاعدة');say('hero','أعود إلى القاعدة.',1,0)}
+ if(hp<=0){hp=100;pos.set(0,1.2,0);vel.set(0,0,0);flying=false;slam=false;if(carrying){scene.remove(carrying.g);carrying=null;lost++}if(held){held.st=0;held.g.position.y=0;held=null}score=Math.floor(score*.75);flash=1;banner('Knocked out. Back at base');say('hero','Regrouping at base.',1,0)}
  for(let i=0;i<SP;i++)if(spl[i]>0){spl[i]-=wdt;spv[i*3+1]-=20*wdt;spp[i*3]+=spv[i*3]*wdt;spp[i*3+1]+=spv[i*3+1]*wdt;spp[i*3+2]+=spv[i*3+2]*wdt;if(spl[i]<=0)spp[i*3+1]=-999}
  sg.attributes.position.needsUpdate=true;
  camFix();cam.position.x+=(Math.random()-.5)*shake;cam.position.y+=(Math.random()-.5)*shake;
  $('hp').style.width=Math.max(0,hp)+'%';$('en').style.width=laserE+'%';$('en').style.background=heat?'#ff7a30':'#ffcc33';
- $('sc').textContent='النقاط '+score+'  الموجة '+wave+'  الأفضل '+Math.max(best,score)+(combo>1?'  كومبو x'+combo.toFixed(1):'');$('ci').textContent='المواطنون '+citizens.length+'، أُنقذوا '+rescued+'، فُقدوا '+lost;
+ $('sc').textContent='Score '+score+'  Wave '+wave+'  Best '+Math.max(best,score)+(combo>1?'  Combo x'+combo.toFixed(1):'');$('ci').textContent='Citizens '+citizens.length+', rescued '+rescued+', lost '+lost;
  let tg=null;if(carrying)tg=ZONE;else if(rescues.length){let bd=1e9;for(const r of rescues){const d=r.g.position.distanceTo(pos);if(d<bd){bd=d;tg=r.g.position}}}
- $('arrow').style.display=tg?'flex':'none';
- if(tg){const dx=tg.x-pos.x,dz=tg.z-pos.z,sy=Math.sin(yaw),cy=Math.cos(yaw);$('ar').style.transform='rotate('+Math.atan2(dx*cy-dz*sy,-dx*sy-dz*cy)+'rad)';$('ad').textContent=(carrying?'المنطقة الآمنة ':'إنقاذ ')+Math.round(Math.hypot(dx,dz))+' م'}
+ $('arrow').style.display=tg?'flex':'none';$('arrow').style.opacity=tg?1:0;
+ if(tg){const dx=tg.x-pos.x,dz=tg.z-pos.z,sy=Math.sin(yaw),cy=Math.cos(yaw);$('ar').style.transform='rotate('+Math.atan2(dx*cy-dz*sy,-dx*sy-dz*cy)+'rad)';$('ad').textContent=(carrying?'Safe zone ':'Rescue ')+Math.round(Math.hypot(dx,dz))+' m'}
  $('flash').style.opacity=clamp(flash,0,.7);
  if(AC){windG.gain.value=clamp(speedS/90,0,1)*.22;lasG.gain.value=(firing&&!heat&&laserE>0)?.05:0;lasOsc.frequency.value=480+Math.random()*80}
  drawMap();if(dt>.034&&++slow>40&&renderer.getPixelRatio()>1){renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight)}
  const bs=enemies.find(e=>e.boss);$('boss').style.display=bs?'block':'none';
- if(bs){$('bn').textContent=(bs.st===1?'تحذير: ':'')+bs.k.name;$('bf').style.width=Math.max(0,bs.hp/bs.max*100)+'%'}else bBeam.visible=false;
+ if(bs){$('bn').textContent=(bs.st===1?'Warning: ':'')+bs.k.name;$('bf').style.width=Math.max(0,bs.hp/bs.max*100)+'%'}else bBeam.visible=false;
  if(bannerT>0&&(bannerT-=dt)<=0)$('banner').style.opacity=0;
 }
 
 // ---------- Part 7: voices, combos, power-ups, ice breath, objectives ----------
 const pk=a=>a[(Math.random()*a.length)|0];
-// Pre-rendered lines (Kokoro, emotion baked in by gen_aegis_voices.py). Key: speaker|text.
-// Lines that are built at runtime (dispatch distances) fall back to the browser voice.
+// Pre-rendered voice clips. Key: speaker|text.
 const CLIPS=/*AEGIS_CLIPS*/{
-"hero|إيجيس جاهز. احمِ المدينة!":["audio/hero_female_00.ogg","audio/hero_male_00.ogg"],
-"hero|يجب أن أصمد!":["audio/hero_female_05.ogg","audio/hero_male_05.ogg"],
-"hero|سقط تهديد آخر.":["audio/hero_female_08.ogg","audio/hero_male_08.ogg"],
-"hero|المنطقة آمنة. عمل جيد.":["audio/hero_female_18.ogg","audio/hero_male_18.ogg"],
-"hero|هؤلاء كلهم. المواطنون بأمان.":["audio/hero_female_19.ogg","audio/hero_male_19.ogg"],
-"hero|أعود إلى القاعدة.":["audio/hero_female_20.ogg","audio/hero_male_20.ogg"],
-"hero|ليس ما دمت هنا!":["audio/hero_female_21.ogg","audio/hero_male_21.ogg"],
-"hero|ابقوا خلفي جميعاً!":["audio/hero_female_22.ogg","audio/hero_male_22.ogg"],
-"hero|ها هم قادمون!":["audio/hero_female_23.ogg","audio/hero_male_23.ogg"],
-"hero|اتصالات فضائية قادمة. ابقوا متيقظين.":["audio/hero_female_24.ogg","audio/hero_male_24.ogg"],
-"hero|دافعوا عن المدينة!":["audio/hero_female_25.ogg","audio/hero_male_25.ogg"],
-"hero|لا يمكن إيقافي!":["audio/hero_female_26.ogg","audio/hero_male_26.ogg"],
-"hero|أشعر بتحسن.":["audio/hero_female_27.ogg","audio/hero_male_27.ogg"],
-"hero|مشحون بالكامل!":["audio/hero_female_28.ogg","audio/hero_male_28.ogg"],
-"hero|الدرع مفعّل.":["audio/hero_female_29.ogg","audio/hero_male_29.ogg"],
-"hero|اندفاع الطاقة!":["audio/hero_female_30.ogg","audio/hero_male_30.ogg"],
-"hero|تجمّد!":["audio/hero_female_31.ogg","audio/hero_male_31.ogg"],
-"hero|نفس الجليد!":["audio/hero_female_32.ogg","audio/hero_male_32.ogg"],
-"hero|اكتملت المهمة!":["audio/hero_female_33.ogg","audio/hero_male_33.ogg"],
-"hero|إيقاف الزمن.":["audio/hero_female_36.ogg","audio/hero_male_36.ogg"],
-"hero|نوفا شمسية!":["audio/hero_female_63.ogg","audio/hero_male_63.ogg"],
-"alien|اقتلوا البطل!":["audio/alien_female_01.ogg","audio/alien_male_01.ogg"],
-"alien|سكري!":["audio/alien_female_02.ogg","audio/alien_male_02.ogg"],
-"alien|من أجل السرب!":["audio/alien_female_03.ogg","audio/alien_male_03.ogg"],
-"alien|اسحقوهم!":["audio/alien_female_04.ogg","audio/alien_male_04.ogg"],
-"titan|أيها البطل الضعيف. هذه المدينة ستنهار!":["audio/titan_female_37.ogg","audio/titan_male_37.ogg"],
-"titan|أنا التايتن. اركع!":["audio/titan_female_38.ogg","audio/titan_male_38.ogg"],
-"titan|ضربتك قوية. ضربتي أقوى!":["audio/titan_female_43.ogg","audio/titan_male_43.ogg"],
-"titan|غضب! غضب خالص!":["audio/titan_female_44.ogg","audio/titan_male_44.ogg"],
-"titan|لا... مستحيل!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
-"titan|لم ينتهِ الأمر!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
-"blade|أمسكني إن استطعت أيها الطيار.":["audio/blade_female_39.ogg","audio/blade_male_39.ogg"],
-"blade|السماء ملك سكاي بليد.":["audio/blade_female_40.ogg","audio/blade_male_40.ogg"],
-"blade|بطيء جداً أيها البطل!":["audio/blade_female_45.ogg","audio/blade_male_45.ogg"],
-"blade|الآن ترى سرعتي الحقيقية.":["audio/blade_female_46.ogg","audio/blade_male_46.ogg"],
-"blade|لا... مستحيل!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
-"blade|لم ينتهِ الأمر!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
-"mother|فور سيحصد هذا العالم.":["audio/mother_female_41.ogg","audio/mother_male_41.ogg"],
-"mother|كوكبكم لنا بالفعل.":["audio/mother_female_42.ogg","audio/mother_male_42.ogg"],
-"mother|الأسلحة جاهزة. استعدوا للاحتراق.":["audio/mother_female_47.ogg","audio/mother_male_47.ogg"],
-"mother|فور لا يسقط.":["audio/mother_female_48.ogg","audio/mother_male_48.ogg"],
-"mother|لا... مستحيل!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
-"mother|لم ينتهِ الأمر!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
-"cit|شكراً لك يا إيجيس!":["audio/cit_female_15.ogg","audio/cit_male_15.ogg"],
-"cit|لقد أنقذتني!":["audio/cit_female_16.ogg","audio/cit_male_16.ogg"],
-"cit|بطلي!":["audio/cit_female_17.ogg","audio/cit_male_17.ogg"],
-"cit|النجدة! ساعدونا!":["audio/cit_female_49.ogg","audio/cit_male_49.ogg"],
-"cit|اهربوا! لقد وصلوا!":["audio/cit_female_50.ogg","audio/cit_male_50.ogg"],
-"cit|آه! لا أرجوك!":["audio/cit_female_51.ogg","audio/cit_male_51.ogg"],
-"disp|فقدنا المتصل.":["audio/disp_52.ogg"],
-"disp|عشر ثوان! أسرع!":["audio/disp_53.ogg"],
-"disp|تم تأكيد الإنقاذ. عمل جيد يا إيجيس.":["audio/disp_54.ogg"],
-"disp|مبنى على وشك الانهيار.":["audio/disp_55.ogg"],
-"disp|انهار مبنى.":["audio/disp_56.ogg"],
-"disp|نداء عاجل. مواطن يسقط. أسرع!":["audio/disp_57.ogg"],
-"disp|مواطن محتجز تحت الأنقاض.":["audio/disp_58.ogg"],
-"disp|المتصل على سطح مبنى. أسرع!":["audio/disp_59.ogg"],
-"disp|بقيت ثلاثون ثانية.":["audio/disp_60.ogg"],
-"disp|أمسكت بهم. توجه إلى المنطقة الآمنة.":["audio/disp_61.ogg"],
-"disp|توجه إلى المنطقة الآمنة.":["audio/disp_62.ogg"]
+"hero|Aegis online. Protect the city!":["audio/hero_female_00.ogg","audio/hero_male_00.ogg"],
+"hero|I need to hold on!":["audio/hero_female_05.ogg","audio/hero_male_05.ogg"],
+"hero|Another threat down.":["audio/hero_female_08.ogg","audio/hero_male_08.ogg"],
+"hero|Area clear. Good work.":["audio/hero_female_18.ogg","audio/hero_male_18.ogg"],
+"hero|That is all of them. The citizens are safe.":["audio/hero_female_19.ogg","audio/hero_male_19.ogg"],
+"hero|Regrouping at base.":["audio/hero_female_20.ogg","audio/hero_male_20.ogg"],
+"hero|Not on my watch!":["audio/hero_female_21.ogg","audio/hero_male_21.ogg"],
+"hero|Stay behind me, everyone!":["audio/hero_female_22.ogg","audio/hero_male_22.ogg"],
+"hero|Here they come!":["audio/hero_female_23.ogg","audio/hero_male_23.ogg"],
+"hero|Alien contacts incoming. Stay sharp.":["audio/hero_female_24.ogg","audio/hero_male_24.ogg"],
+"hero|Defend the city!":["audio/hero_female_25.ogg","audio/hero_male_25.ogg"],
+"hero|Unstoppable!":["audio/hero_female_26.ogg","audio/hero_male_26.ogg"],
+"hero|Feeling better.":["audio/hero_female_27.ogg","audio/hero_male_27.ogg"],
+"hero|Fully charged!":["audio/hero_female_28.ogg","audio/hero_male_28.ogg"],
+"hero|Shield online.":["audio/hero_female_29.ogg","audio/hero_male_29.ogg"],
+"hero|Power surge!":["audio/hero_female_30.ogg","audio/hero_male_30.ogg"],
+"hero|Freeze!":["audio/hero_female_31.ogg","audio/hero_male_31.ogg"],
+"hero|Ice breath!":["audio/hero_female_32.ogg","audio/hero_male_32.ogg"],
+"hero|Objective complete!":["audio/hero_female_33.ogg","audio/hero_male_33.ogg"],
+"hero|Time stop.":["audio/hero_female_36.ogg","audio/hero_male_36.ogg"],
+"hero|Solar nova!":["audio/hero_female_63.ogg","audio/hero_male_63.ogg"],
+"alien|Kill the hero!":["audio/alien_female_01.ogg","audio/alien_male_01.ogg"],
+"alien|Skree!":["audio/alien_female_02.ogg","audio/alien_male_02.ogg"],
+"alien|For the swarm!":["audio/alien_female_03.ogg","audio/alien_male_03.ogg"],
+"alien|Crush them!":["audio/alien_female_04.ogg","audio/alien_male_04.ogg"],
+"titan|Puny hero. This city will crumble!":["audio/titan_female_37.ogg","audio/titan_male_37.ogg"],
+"titan|I am the Titan. Kneel!":["audio/titan_female_38.ogg","audio/titan_male_38.ogg"],
+"titan|You hit hard. I hit harder!":["audio/titan_female_43.ogg","audio/titan_male_43.ogg"],
+"titan|Rage! Pure rage!":["audio/titan_female_44.ogg","audio/titan_male_44.ogg"],
+"titan|No... impossible!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
+"titan|This is not over!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
+"blade|Catch me if you can, flyboy.":["audio/blade_female_39.ogg","audio/blade_male_39.ogg"],
+"blade|The sky belongs to Skyblade.":["audio/blade_female_40.ogg","audio/blade_male_40.ogg"],
+"blade|Too slow, hero!":["audio/blade_female_45.ogg","audio/blade_male_45.ogg"],
+"blade|Now you see my true speed.":["audio/blade_female_46.ogg","audio/blade_male_46.ogg"],
+"blade|No... impossible!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
+"blade|This is not over!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
+"mother|Vorr will harvest this world.":["audio/mother_female_41.ogg","audio/mother_male_41.ogg"],
+"mother|Your planet is already ours.":["audio/mother_female_42.ogg","audio/mother_male_42.ogg"],
+"mother|Weapons online. Prepare to burn.":["audio/mother_female_47.ogg","audio/mother_male_47.ogg"],
+"mother|Vorr does not fall.":["audio/mother_female_48.ogg","audio/mother_male_48.ogg"],
+"mother|No... impossible!":["audio/boss_female_06.ogg","audio/boss_male_06.ogg"],
+"mother|This is not over!":["audio/boss_female_07.ogg","audio/boss_male_07.ogg"],
+"cit|Thank you, Aegis!":["audio/cit_female_15.ogg","audio/cit_male_15.ogg"],
+"cit|You saved me!":["audio/cit_female_16.ogg","audio/cit_male_16.ogg"],
+"cit|My hero!":["audio/cit_female_17.ogg","audio/cit_male_17.ogg"],
+"cit|Help! Somebody help us!":["audio/cit_female_49.ogg","audio/cit_male_49.ogg"],
+"cit|Run! They're here!":["audio/cit_female_50.ogg","audio/cit_male_50.ogg"],
+"cit|Aaah! No, please!":["audio/cit_female_51.ogg","audio/cit_male_51.ogg"],
+"disp|We lost the caller.":["audio/disp_52.ogg"],
+"disp|Ten seconds! Hurry!":["audio/disp_53.ogg"],
+"disp|Rescue confirmed. Nice work, Aegis.":["audio/disp_54.ogg"],
+"disp|A building is close to collapse.":["audio/disp_55.ogg"],
+"disp|A building has collapsed.":["audio/disp_56.ogg"],
+"disp|Priority call. Citizen falling. Hurry!":["audio/disp_57.ogg"],
+"disp|Citizen trapped in rubble.":["audio/disp_58.ogg"],
+"disp|Caller on a rooftop. Hurry!":["audio/disp_59.ogg"],
+"disp|Thirty seconds left.":["audio/disp_60.ogg"],
+"disp|Got them. Head to the safe zone.":["audio/disp_61.ogg"],
+"disp|Head to the safe zone.":["audio/disp_62.ogg"]
 };
-const VP={hero:{p:.9,r:1.02,c:'#7fc8ff',n:'إيجيس',f:0},cit:{p:1.3,r:1.12,c:'#58e08a',n:'مواطن',f:2},alien:{p:.4,r:.82,c:'#9aff3a',n:'فضائي',f:0},titan:{p:.1,r:.7,c:'#ff6a6a',n:'التايتن',f:0},blade:{p:1.15,r:1.1,c:'#ffa030',n:'سكاي بليد',f:0},mother:{p:.35,r:.8,c:'#c084ff',n:'فور',f:1},disp:{p:1.15,r:1.06,c:'#ffd166',n:'الإرسال',f:1}};
-const BL={titan:['أيها البطل الضعيف. هذه المدينة ستنهار!','أنا التايتن. اركع!'],blade:['أمسكني إن استطعت أيها الطيار.','السماء ملك سكاي بليد.'],mother:['فور سيحصد هذا العالم.','كوكبكم لنا بالفعل.']};
-const PL={titan:['ضربتك قوية. ضربتي أقوى!','غضب! غضب خالص!'],blade:['بطيء جداً أيها البطل!','الآن ترى سرعتي الحقيقية.'],mother:['الأسلحة جاهزة. استعدوا للاحتراق.','فور لا يسقط.']};
+const VP={hero:{p:.9,r:1.02,c:'#7fc8ff',n:'Aegis',f:0},cit:{p:1.3,r:1.12,c:'#58e08a',n:'Citizen',f:2},alien:{p:.4,r:.82,c:'#9aff3a',n:'Alien',f:0},titan:{p:.1,r:.7,c:'#ff6a6a',n:'The Titan',f:0},blade:{p:1.15,r:1.1,c:'#ffa030',n:'Skyblade',f:0},mother:{p:.35,r:.8,c:'#c084ff',n:'Vorr',f:1},disp:{p:1.15,r:1.06,c:'#ffd166',n:'Dispatch',f:1}};
+const BL={titan:['Puny hero. This city will crumble!','I am the Titan. Kneel!'],blade:['Catch me if you can, flyboy.','The sky belongs to Skyblade.'],mother:['Vorr will harvest this world.','Your planet is already ours.']};
+const PL={titan:['You hit hard. I hit harder!','Rage! Pure rage!'],blade:['Too slow, hero!','Now you see my true speed.'],mother:['Weapons online. Prepare to burn.','Vorr does not fall.']};
 let muted=false,combo=1,comboT=0,shield=0,dmgT=0,iceCd=0,novaCd=0,ob=null,curVO=null;const vcd={};let lastSaid='',lastSaidT=0;
 function stopVO(){if(curVO){curVO.pause();curVO=null}duck(0)}
 function say(w,t,pri,cd){
@@ -804,16 +601,16 @@ function say(w,t,pri,cd){
  a.onended=()=>{if(curVO===a){curVO=null;duck(0)}};a.play().catch(()=>{duck(0)});
  return 1}
 function waveVoice(){const b=enemies.find(e=>e.boss);
- if(b){setTimeout(()=>say(b.type,pk(BL[b.type]),1,0),700);setTimeout(()=>say('hero',pk(['ليس ما دمت هنا!','ابقوا خلفي جميعاً!']),0,0),4800)}
- else say('hero',pk(['ها هم قادمون!','اتصالات فضائية قادمة. ابقوا متيقظين.','دافعوا عن المدينة!']),1,0)}
-function bumpCombo(){combo=Math.min(5,combo+.5);comboT=4;if(combo>=5)say('hero','لا يمكن إيقافي!',0,12000)}
+ if(b){setTimeout(()=>say(b.type,pk(BL[b.type]),1,0),700);setTimeout(()=>say('hero',pk(['Not on my watch!','Stay behind me, everyone!']),0,0),4800)}
+ else say('hero',pk(['Here they come!','Alien contacts incoming. Stay sharp.','Defend the city!']),1,0)}
+function bumpCombo(){combo=Math.min(5,combo+.5);comboT=4;if(combo>=5)say('hero','Unstoppable!',0,12000)}
 // power-ups
 const pus=[],puG=new T.OctahedronGeometry(.9).scale(1,1.6,1),haloG=new T.TorusGeometry(1.2,.05,4,10),PUC={hp:0xff4a55,en:0xffcc33,sh:0x66ccff,dm:0xff8a20};
 function dropPU(p){if(Math.random()>.3)return;const t=pk(['hp','en','sh','dm']),m=new T.Mesh(puG,FL(PUC[t],PUC[t])),y=Math.max(p.y,3);m.scale.setScalar(1.4);const hl=new T.Mesh(haloG,new T.MeshBasicMaterial({color:PUC[t],fog:false}));hl.rotation.x=Math.PI/2;m.add(hl);m.position.set(p.x,y,p.z);scene.add(m);pus.push({m,t,y,life:25})}
 function updPU(dt){for(let i=pus.length-1;i>=0;i--){const q=pus[i],m=q.m;q.life-=dt;m.rotation.y+=dt*3;m.position.y=q.y+Math.sin(tm*3+i)*.4;
  let got=E1.set(pos.x,pos.y+1,pos.z).distanceTo(m.position)<4;
- if(got){const t=q.t;if(t==='hp'){hp=100;banner('استُعيدت الصحة')}else if(t==='en'){laserE=100;heat=false;banner('شحن الطاقة')}else if(t==='sh'){shield=Math.min(shield+3,6);banner('الدرع مفعّل')}else{dmgT=12;banner('ضرر مضاعف')}
-  burst(m.position,20,12);tone(990,.2,.12,'sine');say('hero',{hp:'أشعر بتحسن.',en:'مشحون بالكامل!',sh:'الدرع مفعّل.',dm:'اندفاع الطاقة!'}[t],0,6000)}
+ if(got){const t=q.t;if(t==='hp'){hp=100;banner('Health restored')}else if(t==='en'){laserE=100;heat=false;banner('Energy overcharge')}else if(t==='sh'){shield=Math.min(shield+3,6);banner('Shield up')}else{dmgT=12;banner('Double damage')}
+  burst(m.position,20,12);tone(990,.2,.12,'sine');say('hero',{hp:'Feeling better.',en:'Fully charged!',sh:'Shield online.',dm:'Power surge!'}[t],0,6000)}
  if(got||q.life<=0){scene.remove(m);pus.splice(i,1)}}}
 // ice breath
 function iceBreath(){if(iceCd>0)return;iceCd=7;cam.getWorldDirection(D);let n=0;
@@ -822,17 +619,17 @@ function iceBreath(){if(iceCd>0)return;iceCd=7;cam.getWorldDirection(D);let n=0;
  for(const b of buildings)if(b.burn&&off((b.x0+b.x1)/2,b.h*.5,(b.z0+b.z1)/2))b.burn=0;
  for(const t of trees)if(t.burn&&off(t.x,4,t.z))t.burn=0;
  for(const c of cars)if(c.burn&&off(c.g.position.x,c.g.position.y+1,c.g.position.z))c.burn=0;
- ring(pos,14,0x88ddff);noise(.6,3500,.25);shake=.3;say('hero',n?'تجمّد!':'نفس الجليد!',0,6000)}
-function nova(){if(novaCd>0)return;novaCd=45;const R=70;for(const e of enemies){E1.subVectors(e.g.position,pos);const d=E1.length();if(d<R){e.hp-=(e.boss?260:600)*(1-d/R*.6);e.kb.copy(E1).normalize().multiplyScalar(30);e.kb.y+=6;burst(e.g.position,18,14)}}for(let i=0;i<3;i++)setTimeout(()=>ring(pos,16+i*16,0xffcc33),i*90);ring(pos,16,0xffe066);burst(pos,60,24);shake=1;banner('نوفا شمسية!');say('hero','نوفا شمسية!',1,0);tone(220,.6,.18,'sawtooth');setTimeout(()=>tone(330,.5,.16,'sawtooth'),90);setTimeout(()=>tone(440,.5,.14,'sine'),180);noise(.8,900,.25)}
+ ring(pos,14,0x88ddff);noise(.6,3500,.25);shake=.3;say('hero',n?'Freeze!':'Ice breath!',0,6000)}
+function nova(){if(novaCd>0)return;novaCd=45;const R=70;for(const e of enemies){E1.subVectors(e.g.position,pos);const d=E1.length();if(d<R){e.hp-=(e.boss?260:600)*(1-d/R*.6);e.kb.copy(E1).normalize().multiplyScalar(30);e.kb.y+=6;burst(e.g.position,18,14)}}for(let i=0;i<3;i++)setTimeout(()=>ring(pos,16+i*16,0xffcc33),i*90);ring(pos,16,0xffe066);burst(pos,60,24);shake=1;banner('Solar nova!');say('hero','Solar nova!',1,0);tone(220,.6,.18,'sawtooth');setTimeout(()=>tone(330,.5,.16,'sawtooth'),90);setTimeout(()=>tone(440,.5,.14,'sine'),180);noise(.8,900,.25)}
 // wave objectives
 function objNew(){if(wave%5===0){ob=null;return}const k=pk(['rescue','time','nohit','combo']);
- ob=k==='rescue'?{k,need:2,base:rescued,txt:'أنقذ مواطنين',pts:500}:k==='time'?{k,need:75,txt:'أنهِ الموجة في 75 ث',pts:600}:k==='nohit'?{k,txt:'لا تتلقَّ ضرراً',pts:700}:{k,txt:'اصل إلى كومبو x3',pts:500};
- ob.el=0;const o=ob;setTimeout(()=>{if(ob===o)banner('المهمة: '+o.txt)},2800)}
-function objDone(){if(!ob||ob.done)return;ob.done=1;score+=ob.pts;banner('اكتملت المهمة! +'+ob.pts);say('hero','اكتملت المهمة!',0,0);tone(1046,.3,.15,'sine')}
-function objEnd(){if(!ob||ob.done)return;const o=ob;if(o.k==='time'&&o.el<=o.need||o.k==='nohit'&&!o.fail)setTimeout(()=>{if(ob===o)objDone()},2700);else setTimeout(()=>{if(ob===o)banner('فشلت المهمة')},2700)}
+ ob=k==='rescue'?{k,need:2,base:rescued,txt:'Rescue 2 citizens',pts:500}:k==='time'?{k,need:75,txt:'Clear the wave in 75 s',pts:600}:k==='nohit'?{k,txt:'Take no damage',pts:700}:{k,txt:'Reach a x3 combo',pts:500};
+ ob.el=0;const o=ob;setTimeout(()=>{if(ob===o)banner('Objective: '+o.txt)},2800)}
+function objDone(){if(!ob||ob.done)return;ob.done=1;score+=ob.pts;banner('Objective complete! +'+ob.pts);say('hero','Objective complete!',0,0);tone(1046,.3,.15,'sine')}
+function objEnd(){if(!ob||ob.done)return;const o=ob;if(o.k==='time'&&o.el<=o.need||o.k==='nohit'&&!o.fail)setTimeout(()=>{if(ob===o)objDone()},2700);else setTimeout(()=>{if(ob===o)banner('Objective failed')},2700)}
 const bub=new T.Mesh(new T.SphereGeometry(2.1,16,12),new T.MeshBasicMaterial({color:0x66ccff,transparent:true,opacity:.22,depthWrite:false}));bub.visible=false;scene.add(bub);
 addEventListener('keydown',e=>{if(e.repeat)return;
- if(e.code==='KeyM'){muted=!muted;if(muted)stopVO();const s=$('sub');s.textContent='الأصوات '+(muted?'مكتومة':'تعمل');s.style.opacity=1;clearTimeout(say.t);say.t=setTimeout(()=>s.style.opacity=0,1500)}
+ if(e.code==='KeyM'){muted=!muted;if(muted)stopVO();const s=$('sub');s.textContent='Voices '+(muted?'muted':'on');s.style.opacity=1;clearTimeout(say.t);say.t=setTimeout(()=>s.style.opacity=0,1500)}
  if(started&&e.code==='KeyR')iceBreath()});
 // time stop
 // ---------- Part 8: destructible city, skill tree, day/night, music ----------
@@ -854,32 +651,35 @@ function updFires(dt){
  for(const t of trees){if(t.dead||!t.burn)continue;t.burn-=dt;fireV.set(t.x,4.5,t.z);if(Math.random()<dt*20)burst(fireV,1,6);t.hp-=8*dt;if(t.hp<=0){t.dead=true;t.tr.visible=t.lf.visible=false;burst(fireV,20,10);ring(fireV,5,0x40ff90)}if(t.burn<0)t.burn=0}
 }
 function repairAll(){for(const b of buildings)if(b.m&&!b.dead&&b.lv<4){b.lv++;b.hp=b.mhp*b.lv/4+1;setBH(b,b.h0*b.lv/4);mbD=1}}
-function trapRescue(b){const g=new T.Group(),m=new T.MeshLambertMaterial({color:new T.Color().setHSL(Math.random(),.6,.55),emissive:0x331a00});mkPerson(g,m);const bc=new T.Mesh(bcG,bmY);bc.position.y=40;g.add(bc);g.position.set((b.x0+b.x1)/2,b.h+.2,(b.z0+b.z1)/2);scene.add(g);rescues.push({g,bc,fall:false,vy:0,t:60,pts:250,kind:'trap'});banner('مواطن محتجز تحت الأنقاض!')}
-function spawnHook(){fallen=0;repairAll();raid=(wave%4===3&&wave%5!==0)?1:0;if(raid){for(let i=0;i<4;i++){const a=Math.random()*6.28;mkEnemy('drone',clamp(pos.x+Math.sin(a)*140,-380,380),clamp(pos.z+Math.cos(a)*140,-380,380))}setTimeout(()=>banner('غارة ليلية: الرؤية ضعيفة'),4000)}}
+function trapRescue(b){const g=new T.Group(),m=new T.MeshLambertMaterial({color:new T.Color().setHSL(Math.random(),.6,.55),emissive:0x331a00});mkPerson(g,m);const bc=new T.Mesh(bcG,bmY);bc.position.y=40;g.add(bc);g.position.set((b.x0+b.x1)/2,b.h+.2,(b.z0+b.z1)/2);scene.add(g);rescues.push({g,bc,fall:false,vy:0,t:60,pts:250,kind:'trap'});banner('Citizen trapped in the rubble!')}
+function spawnHook(){fallen=0;repairAll();raid=(wave%4===3&&wave%5!==0)?1:0;if(raid){for(let i=0;i<4;i++){const a=Math.random()*6.28;mkEnemy('drone',clamp(pos.x+Math.sin(a)*140,-380,380),clamp(pos.z+Math.cos(a)*140,-380,380))}setTimeout(()=>banner('Night raid: visibility is low'),4000)}}
 function waveDone(){grantSP(wave%5===0?2:1);raid=0;stinger()}
 // powerups (no level cap; cost rises with each level)
-const SKN=[['الليزر','ضرر الليزر'],['الحركة','سرعة الحركة'],['Time','إيقاف الزمن'],['Ice','نفس الجليد'],['الدفاع','مقاومة الضرر']],SKK=['laser','mob','time','ice','def'];
+const SKN=[['Laser','Laser damage'],['Mobility','Move speed'],['Time','Time stop'],['Ice','Ice breath'],['Defence','Damage resistance']],SKK=['laser','mob','time','ice','def'];
 let sk={laser:0,mob:0,time:0,ice:0,def:0},skp=2,pwmOpen=false;
 try{const j=JSON.parse(localStorage.getItem('aegis_sk')||'null');if(j){sk=Object.assign(sk,j.sk);skp=j.p}}catch(e){}
 function saveSk(){try{localStorage.setItem('aegis_sk',JSON.stringify({sk,p:skp}))}catch(e){}}
 function applySk(){up.l=1+.3*sk.laser;up.s=1+.12*sk.mob;up.d=1/(1+.15*sk.def);up.i=1+.2*sk.ice;lv[4]=Math.min(6,Math.floor(sk.def/2))}applySk();
-function skStats(k,t){if(k==='laser')return 'ضرر +'+Math.round(30*t)+'%';if(k==='mob')return 'سرعة +'+Math.round(12*t)+'%';if(k==='time')return 'إيقاف '+(6+2*t)+'ث، تبريد '+Math.max(7,25-5*t)+'ث';if(k==='ice')return 'ضرر +'+Math.round(20*t)+'%';return 'الضرر المتلقى -'+Math.round(100*(1-1/(1+.15*t)))+'%'}
-function skMenu(){let h='';SKK.forEach((k,i)=>{const t=sk[k],cost=t+1;h+='<div class="pwm-row" data-i="'+i+'"><div><b>'+(i+1)+'. '+SKN[i][0]+'</b><span class="lv">المستوى '+t+'</span><small>'+skStats(k,t)+' → '+skStats(k,t+1)+'</small></div><div class="pwm-cost">'+cost+' نقطة</div></div>'});$('pwlist').innerHTML=h;$('pwp').textContent=skp+' نقاط'}
+function skStats(k,t){if(k==='laser')return 'Damage +'+Math.round(30*t)+'%';if(k==='mob')return 'Speed +'+Math.round(12*t)+'%';if(k==='time')return 'Stop '+(6+2*t)+'s, cooldown '+Math.max(7,25-5*t)+'s';if(k==='ice')return 'Damage +'+Math.round(20*t)+'%';return 'Damage taken -'+Math.round(100*(1-1/(1+.15*t)))+'%'}
+function skMenu(){let h='';SKK.forEach((k,i)=>{const t=sk[k],cost=t+1;h+='<div class="pwm-row" data-i="'+i+'"><div><b>'+(i+1)+'. '+SKN[i][0]+'</b><span class="lv">Lv '+t+'</span><small>'+skStats(k,t)+' → '+skStats(k,t+1)+'</small></div><div class="pwm-cost">'+cost+' pt</div></div>'});$('pwlist').innerHTML=h;$('pwp').textContent=skp+' points'}
 function openPWM(v){pwmOpen=v;$('pwm').classList.toggle('open',v);if(v)skMenu()}
-function buySk(i){const k=SKK[i],t=sk[k],cost=t+1;if(skp<cost){banner('نقاط غير كافية');return}skp-=cost;sk[k]++;applySk();saveSk();skMenu();tone(880,.2,.12,'sine')}
+function buySk(i){const k=SKK[i],t=sk[k],cost=t+1;if(skp<cost){banner('Not enough points');return}skp-=cost;sk[k]++;applySk();saveSk();skMenu();tone(880,.2,.12,'sine')}
 function grantSP(n){skp+=n;saveSk()}
+const rb=$('pwreset');if(rb)rb.onclick=()=>{if(!confirm('Reset all progress?'))return;for(const k in sk)sk[k]=0;skp=2;best=0;try{localStorage.removeItem('aegis_sk');localStorage.removeItem('aegis_best')}catch(e){}applySk();saveSk();skMenu();banner('Progress reset');tone(600,.2,.12,'sine')};
 $('pwbtn').onclick=()=>openPWM(true);
-$('pwx').onclick=()=>openPWM(false);
+const pwx=$('pwx');if(pwx)pwx.onclick=()=>openPWM(false);
 $('pwlist').onclick=e=>{const r=e.target.closest('.pwm-row');if(r)buySk(+r.dataset.i)};
 function applySet(){
- renderer.setPixelRatio(Math.min(devicePixelRatio,GV[SET.gfx]||2));renderer.setSize(innerWidth,innerHeight);
+ renderer.setPixelRatio(Math.min(devicePixelRatio,touchUI?GV[SET.gfx]||2:2));renderer.setSize(innerWidth,innerHeight);
  if(MG)MG.gain.value=(musicOn?.5:0)*SET.music;
  if(curVO)curVO.volume=.9*SET.voice;
- for(const el of $('settings').querySelectorAll('[data-k]')){if(el.type==='range'){const v=Math.round(SET[el.dataset.k]*100);el.value=v;el.nextElementSibling.textContent=v}else el.classList.toggle('on',SET[el.dataset.k]===el.dataset.v)}
+ const se=$('settings');
+ if(se)for(const el of se.querySelectorAll('[data-k]')){if(el.type==='range'){const v=Math.round(SET[el.dataset.k]*100);el.value=v;el.nextElementSibling.textContent=v}else el.classList.toggle('on',SET[el.dataset.k]===el.dataset.v)}
  try{localStorage.setItem('aegis_set',JSON.stringify(SET))}catch(e){}
 }
-$('settings').onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;SET[b.dataset.k]=b.dataset.v;applySet()};
-$('settings').oninput=e=>{const el=e.target;if(el.type!=='range')return;SET[el.dataset.k]=el.value/100;el.nextElementSibling.textContent=el.value;if(el.dataset.k==='music'&&MG)MG.gain.value=(musicOn?.5:0)*SET.music;if(el.dataset.k==='voice'&&curVO)curVO.volume=.9*SET.voice;try{localStorage.setItem('aegis_set',JSON.stringify(SET))}catch(x){}};
+const setEl=$('settings');
+if(setEl){setEl.onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;SET[b.dataset.k]=b.dataset.v;applySet()};
+setEl.oninput=e=>{const el=e.target;if(el.type!=='range')return;SET[el.dataset.k]=el.value/100;el.nextElementSibling.textContent=el.value;if(el.dataset.k==='music'&&MG)MG.gain.value=(musicOn?.5:0)*SET.music;if(el.dataset.k==='voice'&&curVO)curVO.volume=.9*SET.voice;try{localStorage.setItem('aegis_set',JSON.stringify(SET))}catch(x){}}}
 applySet();
 addEventListener('keydown',e=>{if(!pwmOpen)return;
  if(e.code==='Escape'){e.preventDefault();openPWM(false);return}
@@ -888,7 +688,7 @@ function pierce(tgt,tMax,dt){if(sk.laser<3)return;for(const e of enemies){if(e==
 function tsBurst(){if(sk.time<3)return;for(const e of enemies)if(e.sd>0){e.hp-=e.sd;burst(e.g.position,20,16);e.sd=0}ring(pos,18,0xbfe6ff);shake=.6}
 function shatter(p){ring(p,10,0xaee8ff);burst(p,30,16);for(const o of enemies)if(o.g.position.distanceTo(p)<10+o.k.r)o.hp-=60}
 addEventListener('keydown',e=>{if(!started||e.repeat)return;
- if(e.code==='KeyN'){musicOn=!musicOn;if(MG)MG.gain.value=musicOn?.5*SET.music:0;banner(musicOn?'الموسيقى تعمل':'الموسيقى متوقفة')}
+ if(e.code==='KeyN'){musicOn=!musicOn;if(MG)MG.gain.value=musicOn?.5*SET.music:0;banner(musicOn?'Music on':'Music off')}
  if(e.code==='KeyC')dash();
  if(e.code==='KeyG'&&novaCd<=0)nova()});
 function dash(){if(sk.mob<3||dashCd>0||!started)return;cam.getWorldDirection(D);vel.addScaledVector(D,70);dashCd=3;burst(pos,20,10);tone(300,.2,.15,'sawtooth')}
@@ -910,7 +710,7 @@ function dayUpd(dt){phi=(phi+dt/360)%1;const tg=raid?.75:phi,df=((tg-dph+1.5)%1)
  sunDir.set(-.57*hm*sg,y,-.82*hm*sg);sun.position.copy(sunDir).multiplyScalar(100);
  const U=sky.material.uniforms,c=[0,0,0],pal=(k,o)=>{for(let i=0;i<3;i++){const v=suP[k][i]+(dayP[k][i]-suP[k][i])*dayK;c[i]=v+(niP[k][i]-v)*nightK}o.set(c[0],c[1],c[2])};
  pal('hz',U.uHz.value);scene.fog.color.setRGB(c[0]*.85,c[1]*.85,c[2]*.85);pal('mid',U.uMid.value);pal('top',U.uTop.value);
- scene.fog.far=(1100-(raid?450:300)*nightK)*GF[SET.gfx];hemi.intensity=.35+.6*(1-nightK);sun.intensity=Math.max(0,y)*1.6+.15;sun.color.setRGB(1,.7+.25*dayK,.48+.37*dayK);
+ scene.fog.far=(1100-(raid?450:300)*nightK)*(touchUI?GF[SET.gfx]:1);hemi.intensity=.35+.6*(1-nightK);sun.intensity=Math.max(0,y)*1.6+.15;sun.color.setRGB(1,.7+.25*dayK,.48+.37*dayK);
  for(const m of mats)m.emissiveIntensity=.25+.75*nightK;
  spaceK+=((pos.y>350?Math.min(1,(pos.y-350)/450):0)-spaceK)*(1-Math.exp(-dt*1.5));
  if(spaceK>.002){spaceG.visible=true;spaceG.position.copy(cam.position);earth.rotation.y+=dt*.05;for(const m of spaceMats)m.opacity=spaceK}else spaceG.visible=false;
@@ -932,26 +732,26 @@ function musicStep(){if(!started||!AC||!musicOn)return;const s=ms++,r=[110,87.31
 function stinger(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.4,.1,'triangle'),i*110))}
 // ---------- Part 9: dispatch call center and rotating map ----------
 const dirTo=(x,z)=>{const dx=x-pos.x,dz=z-pos.z,fw=-dx*Math.sin(yaw)-dz*Math.cos(yaw),rt=dx*Math.cos(yaw)-dz*Math.sin(yaw);let c=Math.round(Math.atan2(rt,fw)/(Math.PI/6));c=((c%12)+12)%12;return{d:Math.round(Math.hypot(dx,dz)),c:c||12}};
-const where=(x,z)=>{const q=dirTo(x,z);return(q.c===12?'أمامك مباشرة':q.c===6?'خلفك':'الساعة '+q.c)+'، '+q.d+' متر'};
+const where=(x,z)=>{const q=dirTo(x,z);return(q.c===12?'straight ahead':q.c===6?'behind you':'at your '+q.c+' o’clock')+', '+q.d+' metres'};
 const ttl=r=>{if(r.fall){const s=-r.vy,y=Math.max(0,r.g.position.y);return(-s+Math.sqrt(s*s+24*y))/12}return r.t};
 let trkR=null,trkMan=false,dpT=0,lastCarry=null,lastRes=0,carryT=0,prevR=[];
-const callsEl=document.createElement('div');callsEl.style.cssText='position:fixed;left:calc(8px + env(safe-area-inset-left,0px));top:calc(58px + env(safe-area-inset-top,0px));width:142px;font-size:10px;line-height:1.3;color:#e8eefc;background:rgba(7,18,46,.45);padding:4px 6px;border-radius:5px;pointer-events:none;display:none;text-shadow:0 1px 4px #000';document.body.appendChild(callsEl);
-function dpBuilding(b){if(b.wn)return;b.wn=1;say('disp','مبنى على وشك الانهيار.',0,6000)}
-function dpCollapsed(b){say('disp','انهار مبنى.',0,3000)}
+const callsEl=document.createElement('div');callsEl.id='calls';document.body.appendChild(callsEl);
+function dpBuilding(b){if(b.wn)return;b.wn=1;say('disp','A building is close to collapse.',0,6000)}
+function dpCollapsed(b){say('disp','A building has collapsed.',0,3000)}
 function renderCalls(){const L=rescues.slice().sort((a,b)=>ttl(a)-ttl(b)).slice(0,2);let h='';
- if(carrying){const q=dirTo(ZONE.x,ZONE.z);h+='<div style="color:#40ff90">أحمل: المنطقة الآمنة '+q.d+' م، الساعة '+q.c+'</div>'}
- for(const r of L){const p=r.g.position,q=dirTo(p.x,p.z),t=Math.max(0,ttl(r)),k=r.kind,col=k==='fall'?'#ff4a55':k==='trap'?'#ff9a3a':'#ffcc33',lab=k==='fall'?'يسقط':k==='trap'?'محتجز':'سطح',op=k==='fall'&&((tm*4)|0)%2?.35:1,w=Math.min(100,t/(k==='fall'?4:75)*100);
-  h+='<div style="margin-top:4px;opacity:'+op+'"><b style="color:'+col+'">'+(r===trkR?'▶ ':'')+lab+'</b> '+q.d+' م، الساعة '+q.c+(k==='roof'?', '+Math.round(p.y)+' م للأعلى':'')+', '+Math.ceil(t)+' ث<div style="height:3px;width:'+w+'%;background:'+col+'"></div></div>'}
- callsEl.style.display=h?'block':'none';callsEl.innerHTML='<div style="color:#ffd166;font-weight:700">الإرسال</div>'+h}
+ if(carrying){const q=dirTo(ZONE.x,ZONE.z);h+='<div style="color:#40ff90">Carrying: safe zone '+q.d+' m, '+q.c+' o’clock</div>'}
+ for(const r of L){const p=r.g.position,q=dirTo(p.x,p.z),t=Math.max(0,ttl(r)),k=r.kind,col=k==='fall'?'#ff4a55':k==='trap'?'#ff9a3a':'#ffcc33',lab=k==='fall'?'FALLING':k==='trap'?'TRAPPED':'ROOFTOP',op=k==='fall'&&((tm*4)|0)%2?.35:1,w=Math.min(100,t/(k==='fall'?4:75)*100);
+  h+='<div style="margin-top:4px;opacity:'+op+'"><b style="color:'+col+'">'+(r===trkR?'▶ ':'')+lab+'</b> '+q.d+' m, '+q.c+' o’clock'+(k==='roof'?', '+Math.round(p.y)+' m up':'')+', '+Math.ceil(t)+' s<div style="height:3px;width:'+w+'%;background:'+col+'"></div></div>'}
+ callsEl.style.display=h?'block':'none';callsEl.innerHTML='<div style="color:#ffd166;font-weight:700">DISPATCH</div>'+h}
 function dpUpd(dt){if(!started)return;
- for(const r of prevR)if(!rescues.includes(r)&&carrying!==r&&!r.g.parent)say('disp','فقدنا المتصل.',0,3000);
+ for(const r of prevR)if(!rescues.includes(r)&&carrying!==r&&!r.g.parent)say('disp','We lost the caller.',0,3000);
  prevR=rescues.slice();
  for(const r of rescues){const p=r.g.position,t=ttl(r);
-  if(!r.an){const txt=r.kind==='fall'?'نداء عاجل. مواطن يسقط. أسرع!':r.kind==='trap'?'مواطن محتجز تحت الأنقاض.':'المتصل على سطح مبنى. أسرع!';if(say('disp',txt,r.kind==='fall'?1:0,0))r.an=1}
-  else if(r.kind!=='fall'&&ts<=0){if(t<30&&!r.w30&&say('disp','بقيت ثلاثون ثانية.',0,0))r.w30=1;if(t<10&&!r.w10&&say('disp','عشر ثوان! أسرع!',1,0))r.w10=1}}
- if(carrying&&carrying!==lastCarry){lastCarry=carrying;carryT=0;say('disp','أمسكت بهم. توجه إلى المنطقة الآمنة.',1,0)}
- if(carrying){carryT+=dt;if(carryT>14){carryT=0;say('disp','توجه إلى المنطقة الآمنة.',0,0)}}else lastCarry=null;
- if(rescued>lastRes){lastRes=rescued;say('disp','تم تأكيد الإنقاذ. عمل جيد يا إيجيس.',0,2000)}
+  if(!r.an){const txt=r.kind==='fall'?'Priority call. Citizen falling. Hurry!':r.kind==='trap'?'Citizen trapped in rubble.':'Caller on a rooftop. Hurry!';if(say('disp',txt,r.kind==='fall'?1:0,0))r.an=1}
+  else if(r.kind!=='fall'&&ts<=0){if(t<30&&!r.w30&&say('disp','Thirty seconds left.',0,0))r.w30=1;if(t<10&&!r.w10&&say('disp','Ten seconds! Hurry!',1,0))r.w10=1}}
+ if(carrying&&carrying!==lastCarry){lastCarry=carrying;carryT=0;say('disp','Got them. Head to the safe zone.',1,0)}
+ if(carrying){carryT+=dt;if(carryT>14){carryT=0;say('disp','Head to the safe zone.',0,0)}}else lastCarry=null;
+ if(rescued>lastRes){lastRes=rescued;say('disp','Rescue confirmed. Nice work, Aegis.',0,2000)}
  if(!trkMan||!rescues.includes(trkR)){trkMan=false;let b=1e9;trkR=null;for(const r of rescues){const t=ttl(r);if(t<b){b=t;trkR=r}}}
  if((dpT-=dt)<=0){dpT=.2;renderCalls()}}
 addEventListener('keydown',e=>{if(started&&!e.repeat&&e.code==='KeyV')nextCall()});
@@ -964,7 +764,7 @@ function drawMap(){
  mg.strokeStyle='rgba(255,255,255,.1)';mg.lineWidth=1;for(const r of[100,200]){mg.beginPath();mg.arc(C,C,r*sc,0,7);mg.stroke()}
  const S=(p,edge)=>{const dx=p.x-pos.x,dz=p.z-pos.z,fw=dx*fx+dz*fz,rt=dx*cy-dz*sy,d=Math.hypot(dx,dz);let x=C+rt*sc,y=C-fw*sc,out=0;if(d*sc>C-9){if(!edge)return null;const k=(C-9)/(d*sc);x=C+(x-C)*k;y=C+(y-C)*k;out=1}return{x,y,d,out}};
  const dot=(p,c,r,edge)=>{const s=S(p,edge);if(!s)return null;mg.fillStyle=c;mg.beginPath();mg.arc(s.x,s.y,r,0,7);mg.fill();if(s.out){mg.strokeStyle='#fff';mg.lineWidth=1.5;mg.beginPath();mg.arc(s.x,s.y,r+2,0,7);mg.stroke()}return s};
- const lab=(s,col)=>{mg.strokeStyle=col;mg.lineWidth=1.5;mg.beginPath();mg.arc(s.x,s.y,6+Math.sin(tm*6)*2,0,7);mg.stroke();mg.globalAlpha=.5;mg.beginPath();mg.moveTo(C,C);mg.lineTo(s.x,s.y);mg.stroke();mg.globalAlpha=1;mg.fillStyle='#fff';mg.font='bold 11px sans-serif';mg.textAlign='center';mg.fillText(Math.round(s.d)+'م',s.x,s.y+(s.y<C?16:-9))};
+ const lab=(s,col)=>{mg.strokeStyle=col;mg.lineWidth=1.5;mg.beginPath();mg.arc(s.x,s.y,6+Math.sin(tm*6)*2,0,7);mg.stroke();mg.globalAlpha=.5;mg.beginPath();mg.moveTo(C,C);mg.lineTo(s.x,s.y);mg.stroke();mg.globalAlpha=1;mg.fillStyle='#fff';mg.font='bold 11px sans-serif';mg.textAlign='center';mg.fillText(Math.round(s.d)+'m',s.x,s.y+(s.y<C?16:-9))};
  const zs=dot(ZONE,'#40ff90',5,1);if(carrying&&zs)lab(zs,'#40ff90');
  for(const c of citizens)dot(c.g.position,'#58e08a',1.5);
  for(const q of pus)dot(q.m.position,'#66ccff',2.5);
@@ -980,20 +780,20 @@ function shadows(){let n=0;const put=(x,z,s)=>{let m=shp[n++];if(!m){m=new T.Mes
  for(const e of enemies){const p=e.g.position;put(p.x,p.z,e.k.r*e.g.scale.x*1.1*clamp(1-p.y/120,.3,1))}
  while(n<shp.length)shp[n++].visible=false}
 let ts=0,tsCd=0,tsT=0;
-function tsStart(){if(ts>0){tsEnd();return}if(tsCd>0){banner('إيقاف الزمن يُشحن');return}ts=6+2*sk.time;tsT=0;$('tsfx').style.opacity=1;noise(.4,500,.25);tone(160,.5,.2,'sine');banner('توقف الزمن');say('hero','إيقاف الزمن.',1,0)}
+function tsStart(){if(ts>0){tsEnd();return}if(tsCd>0){banner('Time stop recharging');return}ts=6+2*sk.time;tsT=0;$('tsfx').style.opacity=1;noise(.4,500,.25);tone(160,.5,.2,'sine');banner('Time stopped');say('hero','Time stop.',1,0)}
 function tsEnd(){ts=0;tsCd=Math.max(7,25-5*sk.time);tsBurst();$('tsfx').style.opacity=0;tone(600,.2,.15,'sine');setTimeout(()=>tone(900,.3,.15,'sine'),120)}
 function tsUpd(dt){if(ts>0){ts-=dt;if((tsT-=dt)<=0){tsT=.6;tone(900,.03,.06,'square')}if(ts<=0)tsEnd()}else if(tsCd>0)tsCd-=dt}
 addEventListener('keydown',e=>{if(started&&!e.repeat&&e.code==='KeyZ')tsStart()});
 // lock-on, first-person laser view, zoom
 let lockT=null,tDown=0,fpK=0,zT=1,zK=1;
-const lockName=()=>lockT.boss?lockT.k.name:({drone:'درون',soldier:'جندي',saucer:'صحن طائر',brute:'وحش',crasher:'مدمّر',guardian:'حارس'}[lockT.type]||lockT.type);
+const lockName=()=>lockT.boss?lockT.k.name:lockT.type[0].toUpperCase()+lockT.type.slice(1);
 function unlock(){if(lockT){lockT=null;tone(500,.08,.1,'square')}}
 function lockCands(){cam.getWorldDirection(D);const out=[],cp=cam.position;
  for(const e of enemies){E1.copy(e.g.position);if(!e.k.fly)E1.y+=e.k.r*.8;E2.subVectors(E1,cp);const d=E2.length();if(d>150)continue;E2.normalize();const dt=E2.dot(D);if(dt<=0)continue;
   let ok=true;for(let t=3;t<d;t+=3)if(solid(cp.x+E2.x*t,cp.y+E2.y*t,cp.z+E2.z*t)){ok=false;break}
   if(ok)out.push({e,s:Math.acos(clamp(dt,-1,1))+d*.002})}
  out.sort((a,b)=>a.s-b.s);return out.map(o=>o.e)}
-function lockToggle(){const c=lockCands();if(!c.length){banner('لا هدف في المرأى');return}
+function lockToggle(){const c=lockCands();if(!c.length){banner('No target in sight');return}
  if(!lockT)lockT=c[0];else{const i=c.indexOf(lockT);lockT=c[(i+1)%c.length]}tone(1200,.06,.1,'square')}
 addEventListener('keydown',e=>{if(!started||e.repeat)return;if(e.code==='KeyT')tDown=performance.now();if(e.code==='KeyY')unlock()});
 addEventListener('keyup',e=>{if(!started||e.code!=='KeyT')return;if(performance.now()-tDown>500)unlock();else lockToggle()});
@@ -1019,14 +819,16 @@ function p7(dt){
  if(speedS>52)for(const e of enemies){e.rm=(e.rm||0)-dt;if(e.rm>0)continue;E1.set(pos.x,pos.y+1,pos.z).sub(e.g.position);
   if(E1.length()<e.k.r+3.2){e.rm=.6;e.hp-=(e.boss?30:80)*(sk.mob>=2?2:1);e.kb.copy(vel).normalize().multiplyScalar(30);burst(e.g.position,18,16);ring(pos,6,0xbfe6ff);shake=.6;tone(70,.25,.2,'sawtooth')}}
  updPU(wd);bub.visible=shield>0;bub.position.set(pos.x,pos.y+1,pos.z);
- lockUpd();const st=['المدينة '+intgPct()+'% · نقاط الترقيات '+skp];if(sk.mob>=3)st.push(dashCd>0?'الاندفاع '+Math.ceil(dashCd)+'s':'الاندفاع جاهز (C)');st.push(ts>0?'إيقاف الزمن '+Math.ceil(ts)+'s':tsCd>0?'إيقاف الزمن '+Math.ceil(tsCd)+'s':'إيقاف الزمن جاهز (Z)');if(lockT)st.push('مقفل: '+lockName());if(shield>0)st.push('الدرع '+shield);if(dmgT>0)st.push('ضرر مضاعف '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'الجليد '+Math.ceil(iceCd)+'s':'الجليد جاهز (R)');st.push(novaCd>0?'نوفا '+Math.ceil(novaCd)+'s':'نوفا جاهزة (G)');
- if(ob&&enemies.length)st.push((ob.done?'تم: ':'الهدف: ')+ob.txt+(ob.k==='time'&&!ob.done?' ('+Math.max(0,Math.ceil(ob.need-ob.el))+'s)':''));
+ lockUpd();const st=['City '+intgPct()+'% · Powerup points '+skp];if(sk.mob>=3)st.push(dashCd>0?'Dash '+Math.ceil(dashCd)+'s':'Dash ready (C)');st.push(ts>0?'TIME STOP '+Math.ceil(ts)+'s':tsCd>0?'Time stop '+Math.ceil(tsCd)+'s':'Time stop ready (Z)');if(lockT)st.push('Locked: '+lockName());if(shield>0)st.push('Shield '+shield);if(dmgT>0)st.push('Double damage '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'Ice '+Math.ceil(iceCd)+'s':'Ice ready (R)');st.push(novaCd>0?'Nova '+Math.ceil(novaCd)+'s':'Nova ready (G)');
+ if(ob&&enemies.length)st.push((ob.done?'Done: ':'Goal: ')+ob.txt+(ob.k==='time'&&!ob.done?' ('+Math.max(0,Math.ceil(ob.need-ob.el))+'s)':''));
  $('ex').innerHTML=st.join('<br>')}
 
 // ---------- Part 10: touch controls ----------
-function pauseGame(){if(!started)return;started=false;firing=false;for(const k in keys)keys[k]=0;joy.on=joy.sprint=false;joy.x=joy.y=0;$('stick').classList.remove('sprint');$('knob').style.transform='';openPWM(false);$('start').style.display='flex';$('go').textContent='متابعة'}
+function pauseGame(){if(!started)return;started=false;firing=false;for(const k in keys)keys[k]=0;joy.on=joy.sprint=false;joy.x=joy.y=0;$('stick').classList.remove('sprint');$('knob').style.transform='';openPWM(false);$('start').style.display='flex';$('go').textContent='Resume'}
 const mobL={};
-function updBtns(){
+let updBtns=()=>{};
+if(touchUI){
+updBtns=function(){
  const set=(id,n,off)=>{const s=n+'|'+(off?1:0);if(mobL[id]===s)return;mobL[id]=s;const b=$(id),cd=b.querySelector('.cd');if(cd){cd.textContent=n||'';cd.classList.toggle('on',!!n)}b.classList.toggle('off',!!off)};
  const alt=(id,on)=>{const s=on?'a':'b';if(mobL[id+'-alt']===s)return;mobL[id+'-alt']=s;$(id).classList.toggle('alt',on)};
  set('bTime',ts>0?Math.ceil(ts):tsCd>0?Math.ceil(tsCd):0,false);
@@ -1037,9 +839,9 @@ function updBtns(){
  alt('bLock',!!lockT);
  set('bCall',0,!rescues.length);
  set('bFire',0,heat||laserE<=0);
-}
+};
 const stick=$('stick'),knob=$('knob');let sId=null;
-function stickMove(e){const r=stick.getBoundingClientRect(),R=r.width/2-14;let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const m=Math.hypot(dx,dy);if(m>R){dx*=R/m;dy*=R/m}const k=Math.hypot(dx,dy)/R;joy.on=k>.2;joy.sprint=k>.92;stick.classList.toggle('sprint',joy.sprint);joy.x=dx/R;joy.y=dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)'}
+const stickMove=e=>{const r=stick.getBoundingClientRect(),R=r.width/2-14;let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const m=Math.hypot(dx,dy);if(m>R){dx*=R/m;dy*=R/m}const k=Math.hypot(dx,dy)/R;joy.on=k>.2;joy.sprint=k>.92;stick.classList.toggle('sprint',joy.sprint);joy.x=dx/R;joy.y=dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)'};
 stick.addEventListener('pointerdown',e=>{if(sId!==null)return;sId=e.pointerId;try{stick.setPointerCapture(sId)}catch(x){}stickMove(e);e.preventDefault()});
 stick.addEventListener('pointermove',e=>{if(e.pointerId!==sId)return;stickMove(e);e.preventDefault()});
 const stEnd=e=>{if(e.pointerId!==sId)return;sId=null;joy.on=joy.sprint=false;joy.x=joy.y=0;stick.classList.remove('sprint');knob.style.transform=''};
@@ -1049,7 +851,7 @@ look.addEventListener('pointerdown',e=>{if(lId!==null)return;lId=e.pointerId;lx=
 look.addEventListener('pointermove',e=>{if(e.pointerId!==lId)return;yaw-=(e.clientX-lx)*.005;pitch=clamp(pitch+(e.clientY-ly)*.005,-1.3,1.4);lx=e.clientX;ly=e.clientY});
 const lkEnd=e=>{if(e.pointerId===lId)lId=null};
 look.addEventListener('pointerup',lkEnd);look.addEventListener('pointercancel',lkEnd);
-const press=(id,down,up)=>{const b=$(id);
+const press=(id,down,up)=>{const b=$(id);if(!b)return;
  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}b.classList.add('on');down()});
  const end=()=>{b.classList.remove('on');if(up)up()};
  b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end)};
@@ -1066,6 +868,7 @@ press('bLock',()=>lockT?unlock():lockToggle());
 press('bCall',()=>nextCall());
 press('bDash',()=>dash());
 $('bPause').addEventListener('pointerdown',e=>{e.preventDefault();pauseGame()});
+}
 
 let last=performance.now();
 function loop(now){
@@ -1077,6 +880,3 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 })();
-</script>
-</body>
-</html>

@@ -21,9 +21,10 @@ a:hover,a:focus-visible{background:#ffcc33;color:#07122e;outline:2px solid #d926
 <a id="pc" href="pc.html">Desktop version</a>
 <script>
 (function(){
+ var q = location.search;
  var touch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;
  var ua = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
- var mobile = touch || ua;
+ var mobile = /[?&]mobile=1/.test(q) ? true : /[?&]pc=1/.test(q) ? false : (touch || ua);
  location.replace(mobile ? 'mobile.html' : 'pc.html');
 })();
 </script>
