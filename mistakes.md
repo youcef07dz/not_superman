@@ -21,3 +21,10 @@
 - Meteor aim used `1` for the y component instead of `target.y - start.y`, so it
   flew up instead of falling. Fix: subtract the full start position from the
   target, then normalize.
+- `createRadialGradient` called with 5 arguments (missing the final radius) threw
+  at top level, aborting the rest of game.js. That also produced a fake "Cannot
+  access 'LT' before initialization" from the music timer, because `LT` was never
+  declared. Fix: pass all 6 args; `check.mjs` now checks the arity.
+- Throttled the rotating minimap to 12 Hz as a "cheap" win; it stepped visibly
+  and read as lag. Fix: draw it every frame. Keep throttling only text that does
+  not animate.

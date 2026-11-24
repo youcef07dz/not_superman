@@ -11,11 +11,13 @@
 html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:'Barlow Condensed','Arial Narrow',Impact,sans-serif}
 canvas{display:block}
 #speed{position:fixed;inset:0;pointer-events:none;opacity:0;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 3deg,rgba(255,255,255,.55) 3.2deg 3.6deg,transparent 3.8deg 7deg);-webkit-mask:radial-gradient(circle at 50% 50%,transparent 38%,#000 88%);mask:radial-gradient(circle at 50% 50%,transparent 38%,#000 88%)}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 52%,rgba(4,10,26,.5) 100%)}
 #hud{position:fixed;left:14px;top:calc(14px + env(safe-area-inset-top,0px));padding:7px 14px 8px 12px;background:rgba(7,18,46,.5);border-left:3px solid var(--gold);border-radius:6px;font-size:18px;font-weight:700;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;backdrop-filter:blur(4px)}
 #hud small{display:inline-block;font-size:12px;font-weight:500;opacity:.8;margin-right:10px}
 #mode{color:var(--gold);display:block;font-size:20px;margin-bottom:1px}
 #hint{position:fixed;left:0;right:0;bottom:calc(8px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;opacity:.5;text-shadow:0 2px 6px rgba(0,0,0,.7);pointer-events:none}
-#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(7,18,46,.62);text-align:center;padding:20px}
+#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;background:rgba(7,18,46,.62);text-align:center;padding:20px;overflow-y:auto}
+#start::before,#start::after{content:'';margin:auto}
 #start h1{margin:0;font-size:clamp(64px,14vw,150px);line-height:.9;letter-spacing:.02em;font-weight:700;color:var(--gold);text-shadow:6px 6px 0 var(--red)}
 #start p{margin:0;font-size:22px;max-width:520px}
 #start .keys{font-size:18px;opacity:.85;line-height:1.5}
@@ -52,10 +54,18 @@ canvas{display:block}
 .pwm-row small{display:block;font-size:12px;opacity:.75;font-weight:400}
 .pwm-cost{color:var(--gold);font-weight:700;white-space:nowrap;align-self:center}
 .pwm-foot{margin-top:10px;font-size:12px;opacity:.55;text-align:center}
+#settings{display:flex;flex-direction:column;gap:7px;margin-top:12px;font-size:14px}
+.srow{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.srow>span{width:70px;text-align:right;opacity:.75;font-weight:700;letter-spacing:.04em}
+.srow button{font:700 14px/1 'Barlow Condensed','Arial Narrow',Impact,sans-serif;padding:6px 12px;min-width:64px;border:1px solid rgba(255,255,255,.3);border-radius:4px;background:rgba(7,18,46,.6);color:var(--paper);cursor:pointer}
+.srow button:hover,.srow button:focus-visible{border-color:var(--red)}
+.srow button.on{border-color:var(--gold);background:var(--gold);color:var(--ink)}
+.srow input[type=range]{width:180px;height:18px;accent-color:var(--gold)}
+.srow .sv{width:30px;text-align:left;opacity:.8;font-weight:700}
 </style>
 </head>
 <body>
-<div id="speed"></div><div id="tsfx" style="position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:rgba(110,140,190,.22);backdrop-filter:grayscale(.8) contrast(1.1);-webkit-backdrop-filter:grayscale(.8) contrast(1.1)"></div>
+<div id="speed"></div><div id="vig"></div><div id="tsfx" style="position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:rgba(110,140,190,.22);backdrop-filter:grayscale(.8) contrast(1.1);-webkit-backdrop-filter:grayscale(.8) contrast(1.1)"></div>
 <div id="hud"><span id="mode">On the ground</span><small id="alt"></small><small id="spd"></small></div>
 <div id="flash"></div><div id="cross"></div><div id="banner"></div>
 <div id="stats"><div id="sc"></div><div id="ci"></div><div class="meter hp"><span>HP</span><div class="bar"><i id="hp"></i></div></div><div class="meter en"><span>EN</span><div class="bar"><i id="en"></i></div></div><div id="ex"></div></div>
@@ -68,6 +78,12 @@ canvas{display:block}
   <p>Defender of the city. Aliens are invading. Protect the citizens and survive each wave. Every fifth wave a villain arrives.</p>
   <p class="keys">WASD move and fly · Mouse look · Space jump, then Space again to fly<br>Hold Space rise · C descend · Shift super speed · F toggle flight<br>Hold left mouse: laser eyes · Right mouse: punch · E grab and throw a car · Q ground slam<br>Rescue stranded or falling citizens: touch them, then carry them to the green safe zone<br>Fly up to space: the city sits on Earth, and the Moon is a second ground you can land on · stop the meteor missions<br>T lock onto an enemy (hold T or Y to release) · While firing, your hero hides and the scroll wheel zooms<br>Z time stop · G solar nova · R ice breath · C air dash · V track call · N music · M mute · X rewind<br>Esc pauses: resume, or open Powerups and spend points on unlimited upgrades</p>
   <div class="btns"><button id="go">Take flight</button><button id="pwbtn">Powerups</button></div>
+  <div id="settings">
+    <div class="srow"><span>Music</span><input type="range" data-k="music" min="0" max="100" step="1" aria-label="Music volume"><b class="sv">50</b></div>
+    <div class="srow"><span>Voice</span><input type="range" data-k="voice" min="0" max="100" step="1" aria-label="Voice volume"><b class="sv">90</b></div>
+    <div class="srow"><span>Graphics</span><button data-k="gfx" data-v="high">High</button><button data-k="gfx" data-v="medium">Medium</button><button data-k="gfx" data-v="low">Low</button><button data-k="gfx" data-v="potato">Potato</button></div>
+    <div class="srow"><span>Mode</span><button data-k="mode" data-v="easy">Easy</button><button data-k="mode" data-v="medium">Medium</button><button data-k="mode" data-v="hard">Hard</button><button data-k="mode" data-v="nightmare">Nightmare</button></div>
+  </div>
   <div id="pwm">
     <div class="pwm-head"><span>POWERUPS</span><span id="pwp"></span></div>
     <div id="pwlist"></div>

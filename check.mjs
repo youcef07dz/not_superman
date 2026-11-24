@@ -32,6 +32,10 @@ for (const p of ['pc.html', 'mobile.html']) {
 
 if (!src.includes('THREE')) bad('game.js does not use THREE');
 
+for (const m of src.matchAll(/createRadialGradient\(([^)]*)\)/g)) {
+  if (m[1].split(',').length !== 6) bad('createRadialGradient needs 6 args at: ' + m[0]);
+}
+
 for (const s of ['function rewind(', "e.code==='KeyX'", "press('bRewind'", "set('bRewind'"]) {
   if (!src.includes(s)) bad('game.js missing rewind wiring: ' + s);
 }
