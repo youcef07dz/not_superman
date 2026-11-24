@@ -40,8 +40,8 @@ const gTex=mkTex((g,s)=>{g.fillStyle='#2b3245';g.fillRect(0,0,s,s);const r=s*.12
 gTex.repeat.set(N,N);
 
 // ---------- city ----------
-const base=new T.Mesh(new T.PlaneGeometry(8000,8000),new T.MeshBasicMaterial({color:0x151a27}));
-base.rotation.x=-Math.PI/2;base.position.y=-.06;scene.add(base);
+const base=new T.Mesh(new T.PlaneGeometry(8000,8000),new T.MeshBasicMaterial({color:0x151a27,transparent:true}));
+base.rotation.x=-Math.PI/2;base.position.y=-2;scene.add(base);
 const ground=new T.Mesh(new T.PlaneGeometry(N*CELL,N*CELL),new T.MeshLambertMaterial({map:gTex}));
 ground.rotation.x=-Math.PI/2;scene.add(ground);
 const buildings=[];
@@ -159,7 +159,11 @@ function collide(){
   const vn=vel.dot(n);if(vn<0)vel.addScaledVector(n,-vn);
   if(n.y>.6)grounded=true;
  }
- if(pos.y<=0){pos.y=0;if(vel.y<0)vel.y=0;grounded=true}
+ const gy=moonY(pos.x,pos.z);
+ if(gy!==null&&pos.y<=gy+1.5&&pos.y>=gy-4&&vel.y<=5){pos.y=gy;if(vel.y<0)vel.y=0;grounded=true;if(!moonSeen){moonSeen=true;banner('Moon reached');tone(660,.4,.12,'sine')}}
+ else if(pos.y<=0){pos.y=0;if(vel.y<0)vel.y=0;grounded=true}
+ const mx=pos.x-MOON.x,my=pos.y+1-MOON.y,mz=pos.z-MOON.z,md=Math.hypot(mx,my,mz),mr=MOON.r-2+R;
+ if(md<mr&&md>1e-4){const push=mr-md;pos.x+=mx/md*push;pos.y+=my/md*push;pos.z+=mz/md*push;const vn=vel.dot(n.set(mx/md,my/md,mz/md));if(vn<0)vel.addScaledVector(n,-vn);if(n.y>.6)grounded=true}
 }
 const want=new T.Vector3(),fwd=new T.Vector3(),rgt=new T.Vector3();
 function step(dt){
@@ -181,7 +185,7 @@ function step(dt){
   vel.x+=(want.x-vel.x)*k;vel.z+=(want.z-vel.z)*k;vel.y-=32*dt;
  }
  pos.addScaledVector(vel,dt);
- pos.x=clamp(pos.x,-1400,1400);pos.z=clamp(pos.z,-1400,1400);pos.y=Math.min(pos.y,1500);
+ pos.x=clamp(pos.x,-1700,1700);pos.z=clamp(pos.z,-1700,1700);pos.y=Math.min(pos.y,1500);
  collide();
  if(flying&&grounded&&!keys.Space)flying=false;
 }
@@ -213,15 +217,16 @@ function animate(dt,t){
  fovK+=(clamp((speedS-30)/70,0,1)-fovK)*(1-Math.exp(-dt*4));
  cam.fov=(68+fovK*28)/zK;cam.updateProjectionMatrix();
  $('speed').style.opacity=(fovK*.85).toFixed(2);
- sky.position.copy(cam.position);
+ sky.position.copy(cam.position);stars.position.copy(cam.position);
  // hud
- $('mode').textContent=flying?(speedS>45?'Super speed flight':'Flying'):(speedS>20?'Super speed run':'On the ground');
+ $('mode').textContent=grounded&&pos.y>500?'On the Moon':flying?(speedS>45?'Super speed flight':'Flying'):(speedS>20?'Super speed run':'On the ground');
  $('alt').textContent='Altitude '+Math.round(pos.y)+' m';
  $('spd').textContent='Speed '+Math.round(sp*3.6)+' km/h';
 }
 
 // ---------- Part 2: powers, citizens, enemies ----------
 let firing=false,punchCd=0,punchT=0,laserE=100,heat=false,hp=100,hurtT=0,score=0,wave=0,waveT=4,lost=0,shake=0,bannerT=0,flash=0,cleared=false;
+let meteor=null;
 const enemies=[],citizens=[],bolts=[],D=new T.Vector3(),O=new T.Vector3(),E1=new T.Vector3(),E2=new T.Vector3(),END=new T.Vector3();
 const banner=s=>{$('banner').textContent=s;$('banner').style.opacity=1;bannerT=2.6};
 addEventListener('mousedown',e=>{if(!started)return;if(e.button===0)firing=true;if(e.button===2)punch()});
@@ -265,7 +270,7 @@ function punch(){
  for(const e of enemies){E1.subVectors(e.g.position,pos);const d=E1.length();if(d<7+e.k.r&&E1.dot(D)/d>.35){e.hp-=45*(dmgT>0?2:1);e.kb.copy(E1).normalize().multiplyScalar(30);burst(e.g.position,14,14);shake=.35}}
 }
 // enemies
-const TYPES={drone:{hp:40,r:1.3,pts:60,fly:1,spd:14,rate:1.4,dmg:6},soldier:{hp:70,r:1.2,pts:100,spd:6,rate:1.8,dmg:8},saucer:{hp:180,r:3.2,pts:250,fly:1,spd:8,rate:.9,dmg:10},brute:{hp:260,r:1.9,pts:300,spd:4.5,rate:2.2,dmg:16},crasher:{hp:30,r:1.1,pts:90,fly:1,spd:26,rate:99,dmg:0},guardian:{hp:320,r:1.7,pts:350,spd:5,rate:2.4,dmg:12},titan:{name:'The Titan',boss:1,stand:12,hp:900,r:3.2,pts:1500,spd:7,rate:2,dmg:18},blade:{name:'Skyblade',boss:1,fly:1,stand:45,hp:700,r:2.2,pts:1800,spd:16,rate:.7,dmg:9},mother:{name:'Mothership Vorr',boss:1,fly:1,stand:60,hp:1600,r:9,pts:3000,spd:5,rate:1.2,dmg:12}};
+const TYPES={drone:{hp:40,r:1.3,pts:60,fly:1,spd:14,rate:1.4,dmg:6},soldier:{hp:70,r:1.2,pts:100,spd:6,rate:1.8,dmg:8},saucer:{hp:180,r:3.2,pts:250,fly:1,spd:8,rate:.9,dmg:10},brute:{hp:260,r:1.9,pts:300,spd:4.5,rate:2.2,dmg:16},crasher:{hp:30,r:1.1,pts:90,fly:1,spd:26,rate:99,dmg:0},guardian:{hp:320,r:1.7,pts:350,spd:5,rate:2.4,dmg:12},meteor:{hp:600,r:14,pts:1500,fly:1,spd:0,rate:99,dmg:0},titan:{name:'The Titan',boss:1,stand:12,hp:900,r:3.2,pts:1500,spd:7,rate:2,dmg:18},blade:{name:'Skyblade',boss:1,fly:1,stand:45,hp:700,r:2.2,pts:1800,spd:16,rate:.7,dmg:9},mother:{name:'Mothership Vorr',boss:1,fly:1,stand:60,hp:1600,r:9,pts:3000,spd:5,rate:1.2,dmg:12}};
 const AL=(c,e)=>FL(c,e),GL=c=>new T.MeshBasicMaterial({color:c});
 function tri(a,m){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(a,3));g.computeVertexNormals();return new T.Mesh(g,m)}
 function buildEnemy(t,g){
@@ -290,6 +295,9 @@ function buildEnemy(t,g){
   A(new T.CylinderGeometry(3.2,2.2,.9,8),FL(0x5a4a7a,0x181028),0,0,0);A(new T.CylinderGeometry(1.8,3,.6,8),FL(0x6a5a8a,0x181028),0,.7,0);A(new T.SphereGeometry(1.2,8,4,0,6.283,0,1.571),G,0,1,0);
   for(let i=0;i<8;i++){const a=i/8*6.283;A(new T.ConeGeometry(.35,1.4,4),FL(0xff4a55,0x600808),Math.sin(a)*3.4,0,Math.cos(a)*3.4,0,a-Math.PI/2,-Math.PI/2)}
   A(new T.SphereGeometry(1.1,6,4),GL(0x9aff3a),0,-.7,0);A(new T.TorusGeometry(2.4,.15,4,12),GL(0x9aff3a),0,-.4,0,Math.PI/2);
+ }else if(t==='meteor'){
+  A(new T.IcosahedronGeometry(1,1),FL(0x6a4a3a,0x3a1a0a),0,0,0);A(new T.OctahedronGeometry(.45),FL(0x8a5a2a,0x4a2000),.8,.4,.3);A(new T.OctahedronGeometry(.35),FL(0x7a4a2a,0x3a1800),-.7,-.3,.5);A(new T.OctahedronGeometry(.4),FL(0x5a3a2a,0x2a1000),.1,-.6,-.6);
+  A(new T.SphereGeometry(1.3,12,8),new T.MeshBasicMaterial({color:0xff7a20,transparent:true,opacity:.35,blending:T.AdditiveBlending,depthWrite:false}),0,0,0);
  }else{
   A(new T.CylinderGeometry(3.2,1.6,.8,10),FL(0x7a8aa0,0x203040),0,0,0);A(new T.SphereGeometry(1.4,8,4,0,6.283,0,1.571),G,0,.4,0);A(new T.CylinderGeometry(1,.6,.3,8),GL(0x9aff3a),0,-.55,0);
   for(let i=0;i<8;i++){const a=i/8*6.283;A(new T.OctahedronGeometry(.22),Y,Math.sin(a)*2.9,0,Math.cos(a)*2.9)}}
@@ -301,10 +309,10 @@ function mkEnemy(type,x,z){
  else if(type==='crasher'){part(new T.ConeGeometry(.8,2.2,6),AL(0xff5a1a,0x802000),0,0,0,g).rotation.x=-Math.PI/2;part(new T.SphereGeometry(.5,8,6),GL(0xffee55),0,0,-.9,g)}else if(type==='guardian'){part(new T.BoxGeometry(1.1,1.5,.7),AL(0x1a5a6a,0x0a2a3a),0,1,0,g);part(new T.SphereGeometry(.38,10,8),AL(0x9aff3a,0x4a8a10),0,2,0,g);part(new T.BoxGeometry(1.8,2,.18),AL(0x66ccff,0x2266aa),0,1.1,-.6,g)}else if(type==='drone'){part(new T.OctahedronGeometry(1.1),AL(0x9a2a2a,0x601010),0,0,0,g);part(new T.TorusGeometry(1.4,.1,6,16),GL(0xff6030),0,0,0,g).rotation.x=Math.PI/2}
  else{part(new T.SphereGeometry(3.2,16,8),AL(0x7a8aa0,0x203040),0,0,0,g).scale.y=.3;part(new T.SphereGeometry(1.4,10,8),AL(0x9aff3a,0x4a8a10),0,.6,0,g);part(new T.TorusGeometry(2.4,.15,6,24),GL(0x9aff3a),0,-.4,0,g).rotation.x=Math.PI/2}
  const bar=new T.Sprite(new T.SpriteMaterial({color:0x40ff60,depthTest:false}));bar.position.y=type==='saucer'?3.5:type==='drone'?2.2:2.9;bar.scale.set(2.4,.22,1);g.add(bar);
- const y=k.fly?(type==='saucer'?55:type==='mother'?95:type==='blade'?45:30):0;g.scale.setScalar({brute:1.7,titan:3.2,mother:2.8,blade:1.6}[type]||1);g.position.set(x,y,z);scene.add(g);
+ const y=k.fly?(type==='saucer'?55:type==='mother'?95:type==='blade'?45:30):0;g.scale.setScalar({brute:1.7,titan:3.2,mother:2.8,blade:1.6,meteor:14}[type]||1);g.position.set(x,y,z);scene.add(g);
  const hm=(k.boss?1+Math.floor(wave/15)*.6:1)*DIF[SET.mode].hp;enemies.push({type,k,g,bar,hp:k.hp*hm,max:k.hp*hm,boss:!!k.boss,st:0,stT:3,fire:1+Math.random()*2,kb:new T.Vector3(),y0:y,ph:Math.random()*6});
-}
-function spawnWave(){wave++;shield=Math.max(shield,lv[4]);objNew();spawnHook();const bw=wave%5===0,n=Math.max(2,(bw?4:Math.min(3+wave*2,22))+DIF[SET.mode].sp);
+ return enemies[enemies.length-1]}
+function spawnWave(){wave++;shield=Math.max(shield,lv[4]);objNew();spawnHook();if(wave>3&&wave%4===0&&!meteor)spawnMeteor();const bw=wave%5===0,n=Math.max(2,(bw?4:Math.min(3+wave*2,22))+DIF[SET.mode].sp);
  if(bw){const bt=['titan','blade','mother'][(wave/5-1)%3],a=Math.random()*6.28;mkEnemy(bt,clamp(pos.x+Math.sin(a)*150,-380,380),clamp(pos.z+Math.cos(a)*150,-380,380))}
  for(let i=0;i<n;i++){const r=Math.random(),type=wave>2&&r<.08?'guardian':wave>1&&r<.18?'crasher':wave>3&&r<.26?'brute':wave>2&&r<.4?'saucer':r<.65?'soldier':'drone',a=Math.random()*6.28,d=110+Math.random()*90;
   let x=pos.x+Math.sin(a)*d,z=pos.z+Math.cos(a)*d;if(type==='soldier'||type==='brute'||type==='guardian'){const q=roadPt();x=q[0];z=q[1]}
@@ -321,6 +329,13 @@ function hurt(d){if(shield>0){shield--;ring(pos,5,0x66ccff);tone(660,.15,.12,'si
 function updEnemies(dt0){let dt=dt0;
  for(let i=enemies.length-1;i>=0;i--){
   const e=enemies[i],g=e.g,k=e.k,gp=g.position;dt=dt0;if(e.fr>0){e.fr-=dt0;dt=dt0*.12;e.bar.material.color.setHex(0x66ccff)}else e.bar.material.color.setHex(0x40ff60);
+  if(e.type==='meteor'){
+   gp.addScaledVector(e.vel,dt0);g.rotation.x+=dt0*.5;g.rotation.z+=dt0*.3;
+   if(Math.random()<dt0*50)burst(gp,1,10);
+   if(gp.y<=topAt(gp.x,gp.z)+10){meteorHit(gp);meteor=null;scene.remove(g);enemies.splice(i,1);continue}
+   if(e.hp<=0){const pts=Math.round(1500*combo);burst(gp,160,30);ring(gp,40,0xffd060);scene.remove(g);enemies.splice(i,1);meteor=null;score+=pts;bumpCombo();grantSP(3);banner('Meteor destroyed! Planet saved. +'+pts);say('hero','Planet saved!',1,0);tone(880,.4,.16,'sine');setTimeout(()=>tone(1320,.5,.14,'sine'),130)}
+   continue;
+  }
   let tgt=pos,nd=60;for(const c of citizens){const d=gp.distanceTo(c.g.position);if(d<nd){nd=d;tgt=c.g.position}}
   const dx=tgt.x-gp.x,dz=tgt.z-gp.z,hd=Math.hypot(dx,dz)||1,stand=k.stand||(e.type==='soldier'?18:e.type==='brute'?14:e.type==='guardian'?16:e.type==='drone'?24:e.type==='crasher'?0:38);
   if(hd>stand){gp.x+=dx/hd*k.spd*dt;gp.z+=dz/hd*k.spd*dt}
@@ -334,6 +349,21 @@ function updEnemies(dt0){let dt=dt0;
   if(e.boss)boss(e,dt);
   if(e.hp<=0){burst(gp,40,18);if(e.boss){ring(gp,20,0xffa040);burst(gp,150,35);say(e.type,pk(['No... impossible!','This is not over!']),1,0);setTimeout(()=>say('hero','Another threat down.',0,0),2200);banner(e.type==='mother'?'The city is saved! Endless mode continues':'Villain defeated! +'+k.pts);hp=Math.min(100,hp+50)}scene.remove(g);if(e.fr>0&&sk.ice>=3)shatter(gp);if(!e.suicide){score+=Math.round(k.pts*combo);bumpCombo();dropPU(gp)}enemies.splice(i,1);shake=.4}
  }
+}
+function spawnMeteor(){
+ const a=Math.random()*6.283,r=420+Math.random()*160,e=mkEnemy('meteor',Math.sin(a)*r,Math.cos(a)*r);
+ e.g.position.y=1000+Math.random()*150;e.bar.visible=false;
+ e.vel=new T.Vector3(-e.g.position.x,1-e.g.position.y,-e.g.position.z).normalize().multiplyScalar(42);
+ meteor=e;setTimeout(()=>banner('Special mission: stop the meteor heading for the city!'),3200);
+ say('disp','Meteor inbound. Save the planet!',1,0);
+ tone(140,.8,.2,'sawtooth');setTimeout(()=>tone(110,.8,.2,'sawtooth'),260);
+}
+function meteorHit(p){
+ burst(p,180,35);ring(p,120,0xff7030);ring(p,60,0xffd060);noise(1.6,220,.6);shake=2.2;flash=.9;
+ areaB(p,150,1600);
+ for(let j=citizens.length-1;j>=0;j--){const c=citizens[j];if(c.g.position.distanceTo(p)<70){citLost(c.g.position);scene.remove(c.g);citizens.splice(j,1)}}
+ if(pos.distanceTo(p)<140)hurt(45);
+ banner('The meteor hit the city!');say('disp','Impact. Heavy damage across the city.',0,4000);
 }
 function updBolts(dt){if(!dt)return;
  for(let i=bolts.length-1;i>=0;i--){
@@ -719,14 +749,18 @@ function dash(){if(sk.mob<3||dashCd>0||!started)return;cam.getWorldDirection(D);
 // day and night
 const dayP={hz:[.75,.85,1],mid:[.35,.55,.95],top:[.1,.3,.8]},suP={hz:[1,.6,.36],mid:[.35,.29,.55],top:[.04,.11,.29]},niP={hz:[.06,.08,.16],mid:[.03,.04,.1],top:[.01,.015,.04]},sst=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
 let phi=.45,dph=.45,raid=0,nightK=0;
-const stars=(()=>{const n=500,a=new Float32Array(n*3);for(let i=0;i<n;i++){const u=Math.random()*6.283,v=Math.random()*.95+.05,r=Math.sqrt(1-v*v);a[i*3]=Math.cos(u)*r*2300;a[i*3+1]=v*2300;a[i*3+2]=Math.sin(u)*r*2300}const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(a,3));const p=new T.Points(g,new T.PointsMaterial({color:0xffffff,size:3,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));p.frustumCulled=false;scene.add(p);return p})();
-// space bodies, faded in by altitude
-let spaceK=0;
-const spaceMats=[],earthTex=mkTex((g,s)=>{g.fillStyle='#1b4f9c';g.fillRect(0,0,s,s);g.fillStyle='#2f8a4a';for(let i=0;i<24;i++){const x=Math.random()*s,y=Math.random()*s,r=8+Math.random()*s*.13;g.beginPath();g.ellipse(x,y,r*1.4,r,Math.random()*3,0,6.29);g.fill()}g.fillStyle='#eaf5ff';g.globalAlpha=.55;g.fillRect(0,0,s,s*.05);g.fillRect(0,s*.95,s,s*.05)},256);
-const spaceG=new T.Group();spaceG.visible=false;scene.add(spaceG);
+const stars=(()=>{const n=500,a=new Float32Array(n*3);for(let i=0;i<n;i++){const u=Math.random()*6.283,v=Math.random()*.95+.05,r=Math.sqrt(1-v*v);a[i*3]=Math.cos(u)*r*3900;a[i*3+1]=v*3900;a[i*3+2]=Math.sin(u)*r*3900}const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(a,3));const p=new T.Points(g,new T.PointsMaterial({color:0xffffff,size:3,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));p.frustumCulled=false;scene.add(p);return p})();
+// space: the town sits on Earth; the moon is a second ground you can land on
+let spaceK=0,moonSeen=false;
+const earthTex=mkTex((g,s)=>{g.fillStyle='#1b4f9c';g.fillRect(0,0,s,s);g.fillStyle='#2f8a4a';for(let i=0;i<24;i++){const x=Math.random()*s,y=Math.random()*s,r=8+Math.random()*s*.13;g.beginPath();g.ellipse(x,y,r*1.4,r,Math.random()*3,0,6.29);g.fill()}g.fillStyle='#eaf5ff';g.globalAlpha=.55;g.fillRect(0,0,s,s*.05);g.fillRect(0,s*.95,s,s*.05)},256);
+const earthPlanet=new T.Mesh(new T.SphereGeometry(2500,48,32),new T.MeshBasicMaterial({map:earthTex,transparent:true,opacity:0,fog:false}));
+earthPlanet.position.y=-2500;earthPlanet.rotation.x=Math.PI/2;earthPlanet.visible=false;scene.add(earthPlanet);
+const MOON={x:1150,y:800,z:0,r:450,land:320},moonTex=mkTex((g,s)=>{g.fillStyle='#9a9aa2';g.fillRect(0,0,s,s);for(let i=0;i<30;i++){const x=Math.random()*s,y=Math.random()*s,r=4+Math.random()*s*.08;g.fillStyle='rgba(60,60,72,.5)';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle='rgba(225,225,235,.28)';g.beginPath();g.arc(x-r*.25,y-r*.25,r*.7,0,7);g.fill()}},256);
+const moon=new T.Mesh(new T.SphereGeometry(MOON.r,40,26),new T.MeshBasicMaterial({map:moonTex,fog:false}));
+moon.position.set(MOON.x,MOON.y,MOON.z);scene.add(moon);
+function moonY(x,z){const dx=x-MOON.x,dz=z-MOON.z,d2=dx*dx+dz*dz;return d2>MOON.land*MOON.land?null:MOON.y+Math.sqrt(MOON.r*MOON.r-d2)}
+const spaceMats=[],spaceG=new T.Group();spaceG.visible=false;scene.add(spaceG);
 const spaceBody=(geo,mat,x,y,z,s)=>{mat.transparent=true;mat.opacity=0;mat.fog=false;mat.depthWrite=false;spaceMats.push(mat);const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.scale.setScalar(s);spaceG.add(m);return m};
-const earth=spaceBody(new T.SphereGeometry(1,40,26),new T.MeshBasicMaterial({map:earthTex}),-1200,300,-1500,380);
-spaceBody(new T.SphereGeometry(1,24,16),new T.MeshBasicMaterial({color:0xbfc4cc}),1300,800,-1200,150);
 spaceBody(new T.SphereGeometry(1,20,14),new T.MeshBasicMaterial({color:0xffd45a}),700,600,-1900,220);
 spaceBody(new T.SphereGeometry(1,20,14),new T.MeshBasicMaterial({color:0xff9a2a,blending:T.AdditiveBlending}),700,600,-1900,300);
 function dayUpd(dt){phi=(phi+dt/360)%1;const tg=raid?.75:phi,df=((tg-dph+1.5)%1)-.5;dph=(dph+df*(1-Math.exp(-dt*.6))+1)%1;
@@ -737,7 +771,8 @@ function dayUpd(dt){phi=(phi+dt/360)%1;const tg=raid?.75:phi,df=((tg-dph+1.5)%1)
  scene.fog.far=(1100-(raid?450:300)*nightK)*(touchUI?GF[SET.gfx]:1);hemi.intensity=.35+.6*(1-nightK);sun.intensity=Math.max(0,y)*1.6+.15;sun.color.setRGB(1,.7+.25*dayK,.48+.37*dayK);
  for(const m of mats)m.emissiveIntensity=.25+.75*nightK;
  spaceK+=((pos.y>350?Math.min(1,(pos.y-350)/450):0)-spaceK)*(1-Math.exp(-dt*1.5));
- if(spaceK>.002){spaceG.visible=true;spaceG.position.copy(cam.position);earth.rotation.y+=dt*.05;for(const m of spaceMats)m.opacity=spaceK}else spaceG.visible=false;
+ if(spaceK>.002){spaceG.visible=true;spaceG.position.copy(cam.position);for(const m of spaceMats)m.opacity=spaceK}else spaceG.visible=false;
+ earthPlanet.visible=spaceK>.01;earthPlanet.material.opacity=spaceK;base.material.opacity=1-spaceK;
  stars.material.opacity=Math.max(nightK,spaceK);
  if(spaceK>0){U.uHz.value.multiplyScalar(1-spaceK*.75);U.uMid.value.multiplyScalar(1-spaceK*.85);U.uTop.value.multiplyScalar(1-spaceK*.92);scene.fog.color.multiplyScalar(1-spaceK*.8);scene.fog.far+=(6000-scene.fog.far)*spaceK}}
 // dynamic music
@@ -843,7 +878,7 @@ function p7(dt){
  if(speedS>52)for(const e of enemies){e.rm=(e.rm||0)-dt;if(e.rm>0)continue;E1.set(pos.x,pos.y+1,pos.z).sub(e.g.position);
   if(E1.length()<e.k.r+3.2){e.rm=.6;e.hp-=(e.boss?30:80)*(sk.mob>=2?2:1);e.kb.copy(vel).normalize().multiplyScalar(30);burst(e.g.position,18,16);ring(pos,6,0xbfe6ff);shake=.6;tone(70,.25,.2,'sawtooth')}}
  updPU(wd);bub.visible=shield>0;bub.position.set(pos.x,pos.y+1,pos.z);
- lockUpd();const st=['City '+intgPct()+'% · Powerup points '+skp];if(sk.mob>=3)st.push(dashCd>0?'Dash '+Math.ceil(dashCd)+'s':'Dash ready (C)');st.push(ts>0?'TIME STOP '+Math.ceil(ts)+'s':tsCd>0?'Time stop '+Math.ceil(tsCd)+'s':'Time stop ready (Z)');if(lockT)st.push('Locked: '+lockName());if(shield>0)st.push('Shield '+shield);if(dmgT>0)st.push('Double damage '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'Ice '+Math.ceil(iceCd)+'s':'Ice ready (R)');st.push(novaCd>0?'Nova '+Math.ceil(novaCd)+'s':'Nova ready (G)');st.push(rewindCd>0?'Rewind '+Math.ceil(rewindCd)+'s':'Rewind ready (X)');
+ lockUpd();const st=['City '+intgPct()+'% · Powerup points '+skp];if(meteor)st.push('Meteor '+Math.max(0,Math.round(meteor.g.position.y/40))+'s');if(sk.mob>=3)st.push(dashCd>0?'Dash '+Math.ceil(dashCd)+'s':'Dash ready (C)');st.push(ts>0?'TIME STOP '+Math.ceil(ts)+'s':tsCd>0?'Time stop '+Math.ceil(tsCd)+'s':'Time stop ready (Z)');if(lockT)st.push('Locked: '+lockName());if(shield>0)st.push('Shield '+shield);if(dmgT>0)st.push('Double damage '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'Ice '+Math.ceil(iceCd)+'s':'Ice ready (R)');st.push(novaCd>0?'Nova '+Math.ceil(novaCd)+'s':'Nova ready (G)');st.push(rewindCd>0?'Rewind '+Math.ceil(rewindCd)+'s':'Rewind ready (X)');
  if(ob&&enemies.length)st.push((ob.done?'Done: ':'Goal: ')+ob.txt+(ob.k==='time'&&!ob.done?' ('+Math.max(0,Math.ceil(ob.need-ob.el))+'s)':''));
  $('ex').innerHTML=st.join('<br>')}
 

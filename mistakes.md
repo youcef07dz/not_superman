@@ -18,3 +18,6 @@
 - Chatterbox sometimes talks past the line: it repeats the sentence or adds a
   made-up one. Fix: compare clip length to the old clip, retry with steadier
   sampling, and as a last resort cut at the first pause (`cut_repeat.py`).
+- Meteor aim used `1` for the y component instead of `target.y - start.y`, so it
+  flew up instead of falling. Fix: subtract the full start position from the
+  target, then normalize.

@@ -35,7 +35,12 @@ if (!src.includes('THREE')) bad('game.js does not use THREE');
 for (const s of ['function rewind(', "e.code==='KeyX'", "press('bRewind'", "set('bRewind'"]) {
   if (!src.includes(s)) bad('game.js missing rewind wiring: ' + s);
 }
+for (const s of ['function moonY(', 'function spawnMeteor(', 'function meteorHit(', 'earthPlanet']) {
+  if (!src.includes(s)) bad('game.js missing space wiring: ' + s);
+}
 if (!readFileSync('pc.html', 'utf8').includes('X rewind')) bad('pc.html does not mention X rewind');
 if (!readFileSync('mobile.html', 'utf8').includes('id="bRewind"')) bad('mobile.html missing the rewind button');
+if (!readFileSync('pc.html', 'utf8').includes('Moon')) bad('pc.html does not mention the Moon');
+if (!readFileSync('mobile.html', 'utf8').includes('meteor')) bad('mobile.html does not mention the meteor');
 if (fails.length) { console.log('\n' + fails.length + ' problem(s)'); process.exit(1); }
 console.log('\nall checks passed');
