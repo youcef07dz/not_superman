@@ -128,6 +128,12 @@ html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;us
 #bTime{left:calc(50% + 150px);top:50%}
 #bPause{position:fixed;right:calc(8px + env(safe-area-inset-right,0px));top:calc(8px + env(safe-area-inset-top,0px));width:44px;height:34px;z-index:13;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--gold);border-radius:6px;background:rgba(7,18,46,.55);color:var(--gold);touch-action:none}
 #bPause svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#bRewind{position:fixed;right:calc(58px + env(safe-area-inset-right,0px));top:calc(8px + env(safe-area-inset-top,0px));width:44px;height:34px;z-index:13;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--gold);border-radius:6px;background:rgba(7,18,46,.55);color:var(--gold);touch-action:none}
+#bRewind svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#bRewind .cd{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:var(--ink);border:1px solid currentColor;font:700 10px/15px 'Barlow Condensed','Arial Narrow',Impact,sans-serif;text-align:center;display:none}
+#bRewind .cd.on{display:block}
+#bRewind.off svg{opacity:.35}
+#bRewind.on{background:rgba(255,204,51,.5);color:var(--ink)}
 /* landscape: compact hud, tighter corners, controls clear of messages */
 @media (orientation:landscape){
  #hud{top:calc(84px + env(safe-area-inset-top,0px));padding:3px 8px}
@@ -141,6 +147,7 @@ html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;us
  #stick{width:116px;height:116px}
  #knob{width:48px;height:48px;margin:-24px 0 0 -24px}
  #bPause{width:38px;height:30px}
+ #bRewind{width:38px;height:30px}
 }
 @media (orientation:portrait){#pad{transform:scale(.74);transform-origin:bottom right}}
 @media (max-height:340px){
@@ -176,6 +183,7 @@ html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;us
  <symbol id="i-punch" viewBox="0 0 24 24"><path d="M6 11V8a1.5 1.5 0 0 1 3 0v3M9 11V6a1.5 1.5 0 0 1 3 0v5M12 11V6.5a1.5 1.5 0 0 1 3 0V11M15 11V8a1.5 1.5 0 0 1 3 0v7a5 5 0 0 1-5 5h-1.5a5 5 0 0 1-4.3-2.5L5 14.5a1.6 1.6 0 0 1 2.5-2L9 14"/></symbol>
  <symbol id="i-fire" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+ <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M3 4v5h5"/><path d="M3.6 9A9 9 0 1 1 4 15"/></symbol>
 </svg>
 <div id="pad">
   <button class="ab p2" id="bTime" aria-label="Time stop"><svg class="ico1"><use href="#i-time"/></svg><b class="cd"></b></button><button class="ab p2" id="bNova" aria-label="Solar nova"><svg class="ico1"><use href="#i-nova"/></svg><b class="cd"></b></button><button class="ab p2" id="bIce" aria-label="Ice breath"><svg class="ico1"><use href="#i-ice"/></svg><b class="cd"></b></button><button class="ab p2" id="bLock" aria-label="Lock target"><svg class="ico1"><use href="#i-lock"/></svg><svg class="ico2"><use href="#i-unlock"/></svg></button>
@@ -183,11 +191,12 @@ html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;us
   <button class="ab" id="bJump" aria-label="Jump, tap again to fly"><svg class="ico1"><use href="#i-fly"/></svg></button><button class="ab" id="bDive" aria-label="Dive"><svg class="ico1"><use href="#i-dive"/></svg></button><button class="ab" id="bPunch" aria-label="Punch"><svg class="ico1"><use href="#i-punch"/></svg></button><button class="ab" id="bFire" aria-label="Laser eyes"><svg class="ico1"><use href="#i-fire"/></svg></button>
 </div>
 <button id="bPause" aria-label="Pause"><svg><use href="#i-pause"/></svg></button>
+<button id="bRewind" aria-label="Rewind" title="Rewind: repair buildings and bring back citizens lost in the last 20 s"><svg><use href="#i-rewind"/></svg><b class="cd"></b></button>
 <div id="hint">Esc pause &amp; powerups · Z time stop · G solar nova · R ice · T lock · V track call · N music · M mute · ] skip villain</div>
 <div id="start">
   <h1>AEGIS</h1>
   <p>Defender of the city. Aliens are invading. Protect the citizens and survive each wave. Every fifth wave a villain arrives.</p>
-  <p class="keys">Left stick moves, push it to the edge to sprint · Drag anywhere to look · FIRE holds your laser eyes · PUNCH<br>Tap FLY to jump, tap again and hold to fly, DIVE sinks · Tap GRAB to pick up or throw a car, SLAM pounds the ground<br>TIME stop · NOVA · ICE · LOCK, tap again to unlock · CALL tracks the next rescue<br>PAUSE (top right) then Powerups to spend points on unlimited upgrades · landscape view and sound on, for the full effect</p>
+  <p class="keys">Left stick moves, push it to the edge to sprint · Drag anywhere to look · FIRE holds your laser eyes · PUNCH<br>Tap FLY to jump, tap again and hold to fly, DIVE sinks · Tap GRAB to pick up or throw a car, SLAM pounds the ground<br>TIME stop · NOVA · ICE · LOCK, tap again to unlock · CALL tracks the next rescue · REWIND (top right) repairs buildings and brings back citizens lost in the last 20 s<br>PAUSE (top right) then Powerups to spend points on unlimited upgrades · landscape view and sound on, for the full effect</p>
   <div class="btns"><button id="go">Take flight</button><button id="pwbtn">Powerups</button></div>
   <div id="settings">
     <div class="srow"><span>Music</span><input type="range" data-k="music" min="0" max="100" step="1" aria-label="Music volume"><b class="sv">50</b></div>

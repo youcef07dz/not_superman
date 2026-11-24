@@ -10,7 +10,8 @@ Done:
 - `node check.mjs`: syntax, all clips exist, no orphan clips, pages load the vendored scripts.
 - Rescue arrow now shows on both builds (it was invisible on both), dispatch panel on both, "Reset progress" in the powerups panel.
 - README fixed.
+- Rewind (X on desktop, top-right button on mobile): repairs buildings that collapsed in the last 20 s to 1/4 height and brings back citizens lost in that window; 45 s cooldown. `check.mjs` checks the wiring.
 
 Next:
-- Play both pages on a real phone and a desktop browser; no browser test was possible in this session.
+- Play both pages on a real phone and a desktop browser; no browser test was possible in this session (Edge headless needs elevation).
 - PC has no graphics/difficulty controls and follows whatever the mobile build saved.

@@ -326,7 +326,7 @@ function updEnemies(dt0){let dt=dt0;
   if(hd>stand){gp.x+=dx/hd*k.spd*dt;gp.z+=dz/hd*k.spd*dt}
   const sd=Math.sin(tm*1.2+e.ph)*k.spd*.8;gp.x+=-dz/hd*sd*dt;gp.z+=dx/hd*sd*dt;
   gp.addScaledVector(e.kb,dt);e.kb.multiplyScalar(Math.exp(-3*dt));
-  if(e.type==='crasher'){const ty=tgt.y+1;gp.y+=(ty-gp.y)*Math.min(1,dt*1.6);if(gp.distanceTo(E1.set(tgt.x,ty,tgt.z))<2.6){if(tgt===pos)hurt(22);else{const j=citizens.findIndex(c=>c.g.position===tgt);if(j>=0){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','Aaah! No, please!',0,1500)}}ring(gp,8,0xff7030);burst(gp,40,20);areaB(gp,10,120);e.suicide=1;e.hp=0}}else if(k.fly){const ty=Math.max(e.y0,topAt(gp.x,gp.z)+8);gp.y+=(ty-gp.y)*Math.min(1,dt*2)}else{gp.y=0;pushOut(gp,1)}
+  if(e.type==='crasher'){const ty=tgt.y+1;gp.y+=(ty-gp.y)*Math.min(1,dt*1.6);if(gp.distanceTo(E1.set(tgt.x,ty,tgt.z))<2.6){if(tgt===pos)hurt(22);else{const j=citizens.findIndex(c=>c.g.position===tgt);if(j>=0){const cj=citizens[j];citLost(cj.g.position);scene.remove(cj.g);citizens.splice(j,1);say('cit','Aaah! No, please!',0,1500)}}ring(gp,8,0xff7030);burst(gp,40,20);areaB(gp,10,120);e.suicide=1;e.hp=0}}else if(k.fly){const ty=Math.max(e.y0,topAt(gp.x,gp.z)+8);gp.y+=(ty-gp.y)*Math.min(1,dt*2)}else{gp.y=0;pushOut(gp,1)}
   if(e.type==='saucer'||e.type==='mother')g.rotation.y+=dt*2;else g.rotation.y=Math.atan2(-dx,-dz);
   e.bar.visible=!e.boss&&e.hp<e.max;e.bar.scale.x=Math.max(.01,2.4*e.hp/e.max);
   e.fire-=dt;
@@ -339,7 +339,7 @@ function updBolts(dt){if(!dt)return;
  for(let i=bolts.length-1;i>=0;i--){
   const b=bolts[i],p=b.m.position;p.addScaledVector(b.v,dt);b.life-=dt;let dead=b.life<=0;
   if(!dead&&p.distanceToSquared(E1.set(pos.x,pos.y+1,pos.z))<1.7){hurt(b.dmg);dead=true}
-  if(!dead)for(let j=citizens.length-1;j>=0;j--){const c=citizens[j].g.position;if(Math.abs(p.x-c.x)<.7&&Math.abs(p.z-c.z)<.7&&p.y<2){scene.remove(citizens[j].g);citizens.splice(j,1);lost++;say('cit','Aaah! No, please!',0,1500);burst(p,12,10);dead=true;break}}
+  if(!dead)for(let j=citizens.length-1;j>=0;j--){const c=citizens[j].g.position;if(Math.abs(p.x-c.x)<.7&&Math.abs(p.z-c.z)<.7&&p.y<2){scene.remove(citizens[j].g);citizens.splice(j,1);citLost(c);say('cit','Aaah! No, please!',0,1500);burst(p,12,10);dead=true;break}}
   if(!dead&&solid(p.x,p.y,p.z)){burst(p,4,8);hitB(p,b.dmg*.6);dead=true}
   if(dead){scene.remove(b.m);bolts.splice(i,1)}
  }
@@ -363,7 +363,10 @@ function updCits(dt){
  }
 }
 // ---------- Part 3: super strength ----------
-let tm=0,held=null,slam=false,slamCd=0;
+let tm=0,held=null,slam=false,slamCd=0,rewindCd=0;
+const lostLog=[];
+function citLost(p){lostLog.push({x:p.x,z:p.z,t:tm});lost++}
+function mkCitAt(x,z){const g=new T.Group();mkPerson(g,new T.MeshLambertMaterial({color:new T.Color().setHSL(Math.random(),.6,.55)}));g.position.set(x,0,z);scene.add(g);citizens.push({g,dir:Math.random()*6.28,t:1});return g}
 const cars=[],rings=[],ringG=new T.RingGeometry(.9,1,40).rotateX(-Math.PI/2);
 const carBody=new T.BoxGeometry(2,.8,4.2),carTop=new T.BoxGeometry(1.7,.7,2.2),carGlass=new T.MeshLambertMaterial({color:0x222a38});
 const roadD=v=>{const m=(((v-40)%80)+80)%80;return Math.min(m,80-m)};
@@ -416,7 +419,7 @@ function updRescues(dt){
  if(enemies.length&&(rescueT-=dt)<=0&&rescues.length<3){rescueT=14+Math.random()*8;spawnRescue()}
  for(let i=rescues.length-1;i>=0;i--){const r=rescues[i],p=r.g.position;let gone=0;
   if(r.fall){r.vy-=12*dt;p.y+=r.vy*dt;if(p.y<=0)gone=1}else if((r.t-=dt)<=0)gone=1;
-  if(gone){lost++;say('cit','Aaah! No, please!',0,1500);burst(p,10,8);scene.remove(r.g);rescues.splice(i,1);banner('Citizen lost');continue}
+  if(gone){citLost(p);say('cit','Aaah! No, please!',0,1500);burst(p,10,8);scene.remove(r.g);rescues.splice(i,1);banner('Citizen lost');continue}
   if(!carrying&&Math.hypot(p.x-pos.x,p.z-pos.z)<3.5&&Math.abs(p.y+.8-pos.y-1)<3){carrying=r;r.g.remove(r.bc);rescues.splice(i,1)}}}
 function updCarry(){
  if(!carrying)return;
@@ -501,7 +504,7 @@ function game(dt){
  laser(dt);updFires(dt);p7(dt);updEnemies(wdt);updBolts(wdt);updCits(wdt);updCars(dt);updRescues(wdt);updCarry();
  if(held){armL.rotation.x=armR.rotation.x=Math.PI}
  if(punchT>0){punchT-=dt;armR.rotation.x=1.57;armR.rotation.z=0}
- if(hp<=0){hp=100;pos.set(0,1.2,0);vel.set(0,0,0);flying=false;slam=false;if(carrying){scene.remove(carrying.g);carrying=null;lost++}if(held){held.st=0;held.g.position.y=0;held=null}score=Math.floor(score*.75);flash=1;banner('Knocked out. Back at base');say('hero','Regrouping at base.',1,0)}
+ if(hp<=0){hp=100;pos.set(0,1.2,0);vel.set(0,0,0);flying=false;slam=false;if(carrying){citLost(carrying.g.position);scene.remove(carrying.g);carrying=null}if(held){held.st=0;held.g.position.y=0;held=null}score=Math.floor(score*.75);flash=1;banner('Knocked out. Back at base');say('hero','Regrouping at base.',1,0)}
  for(let i=0;i<SP;i++)if(spl[i]>0){spl[i]-=wdt;spv[i*3+1]-=20*wdt;spp[i*3]+=spv[i*3]*wdt;spp[i*3+1]+=spv[i*3+1]*wdt;spp[i*3+2]+=spv[i*3+2]*wdt;if(spl[i]<=0)spp[i*3+1]=-999}
  sg.attributes.position.needsUpdate=true;
  camFix();cam.position.x+=(Math.random()-.5)*shake;cam.position.y+=(Math.random()-.5)*shake;
@@ -640,7 +643,7 @@ function setBH(b,nh){curH+=nh-b.h;b.h=nh;b.m.scale.y=nh/b.h0;b.m.position.y=nh/2
 function dmgB(b,a){if(!b.m||b.dead||b.h0<20)return;b.hp-=a;const f=b.hp/b.mhp,l=f>.75?4:f>.5?3:f>.25?2:f>0?1:0;if(l>=b.lv)return;b.lv=l;
  const p=E3.set((b.x0+b.x1)/2,b.h,(b.z0+b.z1)/2);
  if(l>0){setBH(b,b.h0*l/4);burst(p,40,18);noise(.8,300,.4);shake=Math.max(shake,.5);if(l===1)dpBuilding(b)}
- else{b.dead=1;burst(p,90,30);ring(p,14,0xb0a090);noise(1.2,250,.5);shake=Math.max(shake,1);setBH(b,Math.min(5,b.h0*.08));b.m.material=rubM;for(const q of b.rf)q.visible=false;fallen++;if(Math.random()<.55)trapRescue(b);dpCollapsed(b)}
+ else{b.dead=1;b.omat=b.m.material;b.fellAt=tm;burst(p,90,30);ring(p,14,0xb0a090);noise(1.2,250,.5);shake=Math.max(shake,1);setBH(b,Math.min(5,b.h0*.08));b.m.material=rubM;for(const q of b.rf)q.visible=false;fallen++;if(Math.random()<.55)trapRescue(b);dpCollapsed(b)}
  mbD=1}
 function areaB(p,R,dmg){for(const b of buildings){if(!b.m||b.dead)continue;const dx=Math.max(b.x0-p.x,0,p.x-b.x1),dz=Math.max(b.z0-p.z,0,p.z-b.z1),dy=p.y>b.h?p.y-b.h:0,d=Math.hypot(dx,dz,dy);if(d<R)dmgB(b,dmg*(1-d/R))}}
 function hitB(p,a){for(const b of buildings)if(b.m&&!b.dead&&p.y<b.h+1&&p.x>b.x0-1&&p.x<b.x1+1&&p.z>b.z0-1&&p.z<b.z1+1){dmgB(b,a);return}}
@@ -651,6 +654,26 @@ function updFires(dt){
  for(const t of trees){if(t.dead||!t.burn)continue;t.burn-=dt;fireV.set(t.x,4.5,t.z);if(Math.random()<dt*20)burst(fireV,1,6);t.hp-=8*dt;if(t.hp<=0){t.dead=true;t.tr.visible=t.lf.visible=false;burst(fireV,20,10);ring(fireV,5,0x40ff90)}if(t.burn<0)t.burn=0}
 }
 function repairAll(){for(const b of buildings)if(b.m&&!b.dead&&b.lv<4){b.lv++;b.hp=b.mhp*b.lv/4+1;setBH(b,b.h0*b.lv/4);mbD=1}}
+// rewind: undo building collapses and citizen losses from the last 20 s
+const RW=20;
+function rewind(){
+ if(rewindCd>0){banner('Rewind recharging');return}
+ const win=tm-RW,nb=[],nc=[];
+ for(const b of buildings)if(b.dead&&b.fellAt>=win){
+  b.dead=0;b.lv=1;b.hp=b.mhp/4+1;b.wn=0;b.m.material=b.omat||b.m.material;for(const q of b.rf)q.visible=true;setBH(b,b.h0*.25);fallen=Math.max(0,fallen-1);nb.push(b);
+  for(let i=rescues.length-1;i>=0;i--){const r=rescues[i];if(r.kind!=='trap')continue;const p=r.g.position;
+   if(p.x<b.x0-1||p.x>b.x1+1||p.z<b.z0-1||p.z>b.z1+1)continue;
+   scene.remove(r.g);rescues.splice(i,1);const j=prevR.indexOf(r);if(j>=0)prevR.splice(j,1);if(trkR===r)trkR=null;nc.push(mkCitAt(p.x,p.z))}}
+ while(lostLog.length&&lostLog[0].t<win)lostLog.shift();
+ for(const L of lostLog.splice(0)){nc.push(mkCitAt(L.x,L.z));lost=Math.max(0,lost-1)}
+ if(!nb.length&&!nc.length){banner('Nothing to rewind in the last '+RW+' s');return}
+ rewindCd=45;mbD=1;
+ for(const b of nb)burst(E3.set((b.x0+b.x1)/2,b.h*.5,(b.z0+b.z1)/2),20,10);
+ for(const g of nc)burst(g.position,10,8);
+ ring(pos,18,0x9fe8ff);noise(.5,900,.2);tone(520,.3,.14,'sine');setTimeout(()=>tone(780,.3,.12,'sine'),110);
+ $('tsfx').style.opacity=1;setTimeout(()=>$('tsfx').style.opacity=0,160);
+ banner('Rewind: '+nb.length+' repaired, '+nc.length+' citizens saved');
+}
 function trapRescue(b){const g=new T.Group(),m=new T.MeshLambertMaterial({color:new T.Color().setHSL(Math.random(),.6,.55),emissive:0x331a00});mkPerson(g,m);const bc=new T.Mesh(bcG,bmY);bc.position.y=40;g.add(bc);g.position.set((b.x0+b.x1)/2,b.h+.2,(b.z0+b.z1)/2);scene.add(g);rescues.push({g,bc,fall:false,vy:0,t:60,pts:250,kind:'trap'});banner('Citizen trapped in the rubble!')}
 function spawnHook(){fallen=0;repairAll();raid=(wave%4===3&&wave%5!==0)?1:0;if(raid){for(let i=0;i<4;i++){const a=Math.random()*6.28;mkEnemy('drone',clamp(pos.x+Math.sin(a)*140,-380,380),clamp(pos.z+Math.cos(a)*140,-380,380))}setTimeout(()=>banner('Night raid: visibility is low'),4000)}}
 function waveDone(){grantSP(wave%5===0?2:1);raid=0;stinger()}
@@ -690,7 +713,8 @@ function shatter(p){ring(p,10,0xaee8ff);burst(p,30,16);for(const o of enemies)if
 addEventListener('keydown',e=>{if(!started||e.repeat)return;
  if(e.code==='KeyN'){musicOn=!musicOn;if(MG)MG.gain.value=musicOn?.5*SET.music:0;banner(musicOn?'Music on':'Music off')}
  if(e.code==='KeyC')dash();
- if(e.code==='KeyG'&&novaCd<=0)nova()});
+ if(e.code==='KeyG'&&novaCd<=0)nova();
+ if(e.code==='KeyX')rewind()});
 function dash(){if(sk.mob<3||dashCd>0||!started)return;cam.getWorldDirection(D);vel.addScaledVector(D,70);dashCd=3;burst(pos,20,10);tone(300,.2,.15,'sawtooth')}
 // day and night
 const dayP={hz:[.75,.85,1],mid:[.35,.55,.95],top:[.1,.3,.8]},suP={hz:[1,.6,.36],mid:[.35,.29,.55],top:[.04,.11,.29]},niP={hz:[.06,.08,.16],mid:[.03,.04,.1],top:[.01,.015,.04]},sst=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
@@ -813,13 +837,13 @@ function fpCam(dt){
  else cam.lookAt(camLook);
  hero.visible=fpK<.8}
 function p7(dt){
- const wd=ts>0?0:dt;if((comboT-=wd)<=0)combo=1;dmgT-=dt;iceCd-=dt;dashCd-=dt;novaCd-=dt;tsUpd(dt);shadows();dayUpd(wd);dpUpd(dt);mState=enemies.some(e=>e.boss)?2:enemies.length?1:0;if(mbD){mbT-=dt;if(mbT<=0){mbD=0;mbT=.6;drawMB()}}if(sk.def>=3&&hp<100)hp=Math.min(100,hp+3*dt);
+ const wd=ts>0?0:dt;if((comboT-=wd)<=0)combo=1;dmgT-=dt;iceCd-=dt;dashCd-=dt;novaCd-=dt;rewindCd-=dt;tsUpd(dt);shadows();dayUpd(wd);dpUpd(dt);mState=enemies.some(e=>e.boss)?2:enemies.length?1:0;if(mbD){mbT-=dt;if(mbT<=0){mbD=0;mbT=.6;drawMB()}}if(sk.def>=3&&hp<100)hp=Math.min(100,hp+3*dt);
  if(ob&&enemies.length&&!ob.done){ob.el+=wd;if(ob.k==='rescue'&&rescued-ob.base>=ob.need||ob.k==='combo'&&combo>=3)objDone()}
  // sonic ram
  if(speedS>52)for(const e of enemies){e.rm=(e.rm||0)-dt;if(e.rm>0)continue;E1.set(pos.x,pos.y+1,pos.z).sub(e.g.position);
   if(E1.length()<e.k.r+3.2){e.rm=.6;e.hp-=(e.boss?30:80)*(sk.mob>=2?2:1);e.kb.copy(vel).normalize().multiplyScalar(30);burst(e.g.position,18,16);ring(pos,6,0xbfe6ff);shake=.6;tone(70,.25,.2,'sawtooth')}}
  updPU(wd);bub.visible=shield>0;bub.position.set(pos.x,pos.y+1,pos.z);
- lockUpd();const st=['City '+intgPct()+'% · Powerup points '+skp];if(sk.mob>=3)st.push(dashCd>0?'Dash '+Math.ceil(dashCd)+'s':'Dash ready (C)');st.push(ts>0?'TIME STOP '+Math.ceil(ts)+'s':tsCd>0?'Time stop '+Math.ceil(tsCd)+'s':'Time stop ready (Z)');if(lockT)st.push('Locked: '+lockName());if(shield>0)st.push('Shield '+shield);if(dmgT>0)st.push('Double damage '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'Ice '+Math.ceil(iceCd)+'s':'Ice ready (R)');st.push(novaCd>0?'Nova '+Math.ceil(novaCd)+'s':'Nova ready (G)');
+ lockUpd();const st=['City '+intgPct()+'% · Powerup points '+skp];if(sk.mob>=3)st.push(dashCd>0?'Dash '+Math.ceil(dashCd)+'s':'Dash ready (C)');st.push(ts>0?'TIME STOP '+Math.ceil(ts)+'s':tsCd>0?'Time stop '+Math.ceil(tsCd)+'s':'Time stop ready (Z)');if(lockT)st.push('Locked: '+lockName());if(shield>0)st.push('Shield '+shield);if(dmgT>0)st.push('Double damage '+Math.ceil(dmgT)+'s');st.push(iceCd>0?'Ice '+Math.ceil(iceCd)+'s':'Ice ready (R)');st.push(novaCd>0?'Nova '+Math.ceil(novaCd)+'s':'Nova ready (G)');st.push(rewindCd>0?'Rewind '+Math.ceil(rewindCd)+'s':'Rewind ready (X)');
  if(ob&&enemies.length)st.push((ob.done?'Done: ':'Goal: ')+ob.txt+(ob.k==='time'&&!ob.done?' ('+Math.max(0,Math.ceil(ob.need-ob.el))+'s)':''));
  $('ex').innerHTML=st.join('<br>')}
 
@@ -833,6 +857,7 @@ updBtns=function(){
  const alt=(id,on)=>{const s=on?'a':'b';if(mobL[id+'-alt']===s)return;mobL[id+'-alt']=s;$(id).classList.toggle('alt',on)};
  set('bTime',ts>0?Math.ceil(ts):tsCd>0?Math.ceil(tsCd):0,false);
  set('bNova',novaCd>0?Math.ceil(novaCd):0,novaCd>0);
+ set('bRewind',rewindCd>0?Math.ceil(rewindCd):0,rewindCd>0);
  set('bIce',iceCd>0?Math.ceil(iceCd):0,iceCd>0);
  set('bDash',dashCd>0?Math.ceil(dashCd):0,sk.mob<3||dashCd>0);
  alt('bGrab',!!held);
@@ -867,6 +892,7 @@ press('bIce',()=>iceBreath());
 press('bLock',()=>lockT?unlock():lockToggle());
 press('bCall',()=>nextCall());
 press('bDash',()=>dash());
+press('bRewind',()=>rewind());
 $('bPause').addEventListener('pointerdown',e=>{e.preventDefault();pauseGame()});
 }
 

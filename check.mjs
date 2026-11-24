@@ -31,5 +31,11 @@ for (const p of ['pc.html', 'mobile.html']) {
 }
 
 if (!src.includes('THREE')) bad('game.js does not use THREE');
+
+for (const s of ['function rewind(', "e.code==='KeyX'", "press('bRewind'", "set('bRewind'"]) {
+  if (!src.includes(s)) bad('game.js missing rewind wiring: ' + s);
+}
+if (!readFileSync('pc.html', 'utf8').includes('X rewind')) bad('pc.html does not mention X rewind');
+if (!readFileSync('mobile.html', 'utf8').includes('id="bRewind"')) bad('mobile.html missing the rewind button');
 if (fails.length) { console.log('\n' + fails.length + ' problem(s)'); process.exit(1); }
 console.log('\nall checks passed');
