@@ -44,10 +44,12 @@ const base=new T.Mesh(new T.PlaneGeometry(8000,8000),new T.MeshBasicMaterial({co
 base.rotation.x=-Math.PI/2;base.position.y=-2;scene.add(base);
 const ground=new T.Mesh(new T.PlaneGeometry(N*CELL,N*CELL),new T.MeshLambertMaterial({map:gTex}));
 ground.rotation.x=-Math.PI/2;scene.add(ground);
+const townMats=[ground.material];
 const buildings=[];
 const tints=[0xffffff,0xcfd8ff,0xffe0c8,0xc8f0e8,0xd8c8ff];
-const mats=tints.map(c=>new T.MeshLambertMaterial({map:winMap,emissiveMap:winEm,emissive:0xffffff,color:c}));
+const mats=tints.map(c=>new T.MeshLambertMaterial({map:winMap,emissiveMap:winEm,emissive:0xffffff,color:c}));townMats.push(...mats);
 const topM=new T.MeshPhongMaterial({color:0x3a4260,flatShading:true,shininess:0}),tankM=new T.MeshPhongMaterial({color:0x8a6a4a,flatShading:true,shininess:0}),acG=new T.BoxGeometry(2.4,1.2,2),tankG=new T.CylinderGeometry(1.2,1.4,2.4,6),capG=new T.ConeGeometry(1.5,1,6);
+townMats.push(topM,tankM);
 function roof(x,z,w,h,d){const r=Math.random(),ox=(Math.random()-.5)*w*.4,oz=(Math.random()-.5)*d*.4;
  if(r<.35){const a=new T.Mesh(acG,topM);a.position.set(x+ox,h+.6,z+oz);scene.add(a)}
  else if(r<.6){const t=new T.Mesh(tankG,tankM);t.position.set(x+ox,h+1.2,z+oz);scene.add(t);const c=new T.Mesh(capG,tankM);c.position.set(x+ox,h+2.9,z+oz);scene.add(c)}
@@ -58,8 +60,8 @@ function addBox(x,z,w,h,d,mat,collide){
   if(f===2||f===3)uv.setXY(i,0,0);else uv.setXY(i,uv.getX(i)*(f<2?d:w)/32+ox,uv.getY(i)*h/32+oy)}
  const m=new T.Mesh(g,mat);m.position.set(x,h/2,z);scene.add(m);const n0=scene.children.length;if(h>20)roof(x,z,w,h,d);const rf=scene.children.slice(n0);
  if(collide)buildings.push({x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2,h,m,rf,h0:h,hp:w*d*h/40,mhp:w*d*h/40,lv:4,dead:0});
- if(h>95){const a=new T.Mesh(new T.CylinderGeometry(.3,.4,16,6),new T.MeshLambertMaterial({color:0x888ca0,emissive:0x330000}));a.position.set(x,h+8,z);scene.add(a);rf.push(a);
-  const t=new T.Mesh(new T.SphereGeometry(.8,8,6),new T.MeshBasicMaterial({color:0xff3030}));t.position.set(x,h+16,z);scene.add(t);rf.push(t)}
+ if(h>95){const am=new T.MeshLambertMaterial({color:0x888ca0,emissive:0x330000}),bm=new T.MeshBasicMaterial({color:0xff3030});townMats.push(am,bm);const a=new T.Mesh(new T.CylinderGeometry(.3,.4,16,6),am);a.position.set(x,h+8,z);scene.add(a);rf.push(a);
+  const t=new T.Mesh(new T.SphereGeometry(.8,8,6),bm);t.position.set(x,h+16,z);scene.add(t);rf.push(t)}
 }
 const half=(N-1)/2;
 for(let i=-half;i<=half;i++)for(let j=-half;j<=half;j++){
@@ -71,16 +73,17 @@ for(let i=-half;i<=half;i++)for(let j=-half;j<=half;j++){
  }
 }
 // street lamps
-{const n=170,pm=new T.InstancedMesh(new T.CylinderGeometry(.1,.14,6,5),topM,n),hm=new T.InstancedMesh(new T.OctahedronGeometry(.45),new T.MeshBasicMaterial({color:0xffd98a}),n),mx=new T.Matrix4();
+{const n=170,lm=new T.MeshBasicMaterial({color:0xffd98a}),pm=new T.InstancedMesh(new T.CylinderGeometry(.1,.14,6,5),topM,n),hm=new T.InstancedMesh(new T.OctahedronGeometry(.45),lm,n),mx=new T.Matrix4();townMats.push(lm);
  for(let i=0;i<n;i++){const a=Math.floor(Math.random()*9)-4,t=(Math.random()-.5)*840,o=(Math.random()<.5?-1:1)*10.4,rx=Math.random()<.5,x=rx?40+80*a+o:t,z=rx?t:40+80*a+o;
   mx.makeTranslation(x,3,z);pm.setMatrixAt(i,mx);mx.makeTranslation(x,6.3,z);hm.setMatrixAt(i,mx)}
  pm.frustumCulled=hm.frustumCulled=false;scene.add(pm);scene.add(hm)}
 // central park and launch plinth
 const park=new T.Mesh(new T.PlaneGeometry(60,60),new T.MeshLambertMaterial({color:0x1d3a2a}));
-park.rotation.x=-Math.PI/2;park.position.y=.04;scene.add(park);
+park.rotation.x=-Math.PI/2;park.position.y=.04;scene.add(park);townMats.push(park.material);
 const plinth=new T.Mesh(new T.BoxGeometry(7,1.2,7),new T.MeshLambertMaterial({color:0x8a7a3a,emissive:0x2a2208}));
-plinth.position.y=.6;scene.add(plinth);buildings.push({x0:-3.5,x1:3.5,z0:-3.5,z1:3.5,h:1.2});
+plinth.position.y=.6;scene.add(plinth);townMats.push(plinth.material);buildings.push({x0:-3.5,x1:3.5,z0:-3.5,z1:3.5,h:1.2});
 const trees=[],trunkM=new T.MeshLambertMaterial({color:0x4a3322}),leafM=new T.MeshLambertMaterial({color:0x2a6a3a});
+townMats.push(trunkM,leafM);
 for(let k=0;k<18;k++){const x=(Math.random()-.5)*52,z=(Math.random()-.5)*52;if(Math.hypot(x,z)<8)continue;
  const tr=new T.Mesh(new T.CylinderGeometry(.3,.4,3,6),trunkM);tr.position.set(x,1.5,z);scene.add(tr);
  const lf=new T.Mesh(new T.ConeGeometry(2.2,6,7),leafM);lf.position.set(x,5.5,z);scene.add(lf);
@@ -755,14 +758,50 @@ let spaceK=0,moonSeen=false;
 const earthTex=mkTex((g,s)=>{g.fillStyle='#1b4f9c';g.fillRect(0,0,s,s);g.fillStyle='#2f8a4a';for(let i=0;i<24;i++){const x=Math.random()*s,y=Math.random()*s,r=8+Math.random()*s*.13;g.beginPath();g.ellipse(x,y,r*1.4,r,Math.random()*3,0,6.29);g.fill()}g.fillStyle='#eaf5ff';g.globalAlpha=.55;g.fillRect(0,0,s,s*.05);g.fillRect(0,s*.95,s,s*.05)},256);
 const earthPlanet=new T.Mesh(new T.SphereGeometry(2500,48,32),new T.MeshBasicMaterial({map:earthTex,transparent:true,opacity:0,fog:false}));
 earthPlanet.position.y=-2500;earthPlanet.rotation.x=Math.PI/2;earthPlanet.visible=false;scene.add(earthPlanet);
-const MOON={x:1150,y:800,z:0,r:450,land:320},moonTex=mkTex((g,s)=>{g.fillStyle='#9a9aa2';g.fillRect(0,0,s,s);for(let i=0;i<30;i++){const x=Math.random()*s,y=Math.random()*s,r=4+Math.random()*s*.08;g.fillStyle='rgba(60,60,72,.5)';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle='rgba(225,225,235,.28)';g.beginPath();g.arc(x-r*.25,y-r*.25,r*.7,0,7);g.fill()}},256);
-const moon=new T.Mesh(new T.SphereGeometry(MOON.r,40,26),new T.MeshBasicMaterial({map:moonTex,fog:false}));
+const MOON={x:1150,y:800,z:0,r:450,land:320},moonTex=mkTex((g,s)=>{
+ g.fillStyle='#9a9aa2';g.fillRect(0,0,s,s);
+ for(let i=0;i<2600;i++){const x=Math.random()*s,y=Math.random()*s,r=Math.random()*1.8+.3,v=105+Math.random()*80|0;g.fillStyle='rgba('+v+','+v+','+(v+8)+',.4)';g.beginPath();g.arc(x,y,r,0,7);g.fill()}
+ for(let i=0;i<10;i++){const x=Math.random()*s,y=Math.random()*s,r=s*(.05+Math.random()*.09);g.fillStyle='rgba(72,72,84,.22)';g.beginPath();g.ellipse(x,y,r*1.3,r,Math.random()*3,0,7);g.fill()}
+ for(let i=0;i<46;i++){const x=Math.random()*s,y=Math.random()*s,r=3+Math.random()*s*.07;
+  g.fillStyle='rgba(48,48,58,.5)';g.beginPath();g.arc(x,y,r,0,7);g.fill();
+  g.fillStyle='rgba(36,36,46,.55)';g.beginPath();g.arc(x+r*.12,y+r*.12,r*.7,0,7);g.fill();
+  g.strokeStyle='rgba(228,228,240,.55)';g.lineWidth=Math.max(1,r*.16);g.beginPath();g.arc(x-r*.06,y-r*.06,r*.94,0,7);g.stroke()}
+},512);
+const moon=new T.Mesh(new T.SphereGeometry(MOON.r,64,40),new T.MeshLambertMaterial({map:moonTex,fog:false}));
 moon.position.set(MOON.x,MOON.y,MOON.z);scene.add(moon);
+// boulders, peaks and craters on the surface; visual only, collision stays the smooth sphere
+const moonD=new T.Group();moonD.position.set(MOON.x,MOON.y,MOON.z);scene.add(moonD);
+{
+ const up=new T.Vector3(0,1,0),zA=new T.Vector3(0,0,1),dir=new T.Vector3(),
+  rockM=new T.MeshLambertMaterial({color:0x8a8a96,flatShading:true}),
+  peakM=new T.MeshLambertMaterial({color:0x7a7a88,flatShading:true}),
+  holeM=new T.MeshBasicMaterial({color:0x3a3a46,transparent:true,opacity:.72,depthWrite:false});
+ const place=(m,d,off,ax)=>{m.position.copy(d).multiplyScalar(MOON.r+off);m.quaternion.setFromUnitVectors(ax||up,d);moonD.add(m)};
+ const rnd=()=>{for(let k=0;k<24;k++){dir.set(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1);const l=dir.length();if(l>.25&&l<1){dir.divideScalar(l);return dir}}return dir.set(0,1,0)};
+ for(let i=0;i<46;i++){const d=rnd().clone(),sc=1.4+Math.random()*5,m=new T.Mesh(new T.IcosahedronGeometry(1,0),rockM);m.scale.set(sc*(.7+Math.random()*.6),sc*(.5+Math.random()*.5),sc);place(m,d,-sc*.25)}
+ for(let i=0;i<16;i++){const a=Math.random()*6.283,el=.15+Math.random()*.5;dir.set(Math.cos(a)*Math.cos(el),Math.sin(el),Math.sin(a)*Math.cos(el));const h=16+Math.random()*48,w=9+Math.random()*20,m=new T.Mesh(new T.ConeGeometry(1,1,6),peakM);m.scale.set(w,h,w);place(m,dir,h/2-3)}
+ for(let i=0;i<30;i++){const d=rnd().clone(),rr=5+Math.random()*26,m=new T.Mesh(new T.CircleGeometry(rr,18),holeM);place(m,d,1.2,zA)}
+}
 function moonY(x,z){const dx=x-MOON.x,dz=z-MOON.z,d2=dx*dx+dz*dz;return d2>MOON.land*MOON.land?null:MOON.y+Math.sqrt(MOON.r*MOON.r-d2)}
 const spaceMats=[],spaceG=new T.Group();spaceG.visible=false;scene.add(spaceG);
 const spaceBody=(geo,mat,x,y,z,s)=>{mat.transparent=true;mat.opacity=0;mat.fog=false;mat.depthWrite=false;spaceMats.push(mat);const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.scale.setScalar(s);spaceG.add(m);return m};
 spaceBody(new T.SphereGeometry(1,20,14),new T.MeshBasicMaterial({color:0xffd45a}),700,600,-1900,220);
 spaceBody(new T.SphereGeometry(1,20,14),new T.MeshBasicMaterial({color:0xff9a2a,blending:T.AdditiveBlending}),700,600,-1900,300);
+// satellites drifting in the sky box
+const sats=[];
+function satellite(x,y,z,s,tilt){
+ const g=new T.Group();
+ const part=(geo,color,px,py,pz)=>{const mat=new T.MeshBasicMaterial({color,transparent:true,opacity:0,fog:false,depthWrite:false,side:T.DoubleSide});spaceMats.push(mat);const m=new T.Mesh(geo,mat);m.position.set(px,py,pz);g.add(m);return m};
+ part(new T.BoxGeometry(3,2.2,2.2),0xd8dde6,0,0,0);
+ part(new T.BoxGeometry(9,.25,2.6),0x2b4fa8,5.7,0,0);
+ part(new T.BoxGeometry(9,.25,2.6),0x2b4fa8,-5.7,0,0);
+ part(new T.CylinderGeometry(1.1,1.1,.4,12),0xf0f0f0,0,1.5,0);
+ part(new T.SphereGeometry(1.5,10,6,0,6.283,0,1.1),0xe8e8ee,0,-1.7,0).rotation.x=Math.PI;
+ g.position.set(x,y,z);g.scale.setScalar(s);g.rotation.z=tilt;spaceG.add(g);sats.push(g);
+}
+satellite(-620,340,-560,24,.4);
+satellite(560,600,-820,32,-.7);
+satellite(-280,-120,660,20,1.1);
 function dayUpd(dt){phi=(phi+dt/360)%1;const tg=raid?.75:phi,df=((tg-dph+1.5)%1)-.5;dph=(dph+df*(1-Math.exp(-dt*.6))+1)%1;
  const a=dph*6.2832,y=Math.sin(a),hm=Math.sqrt(1-y*y),sg=Math.cos(a)>=0?1:-1,dayK=sst(0,.45,y);nightK=sst(.1,-.25,y);
  sunDir.set(-.57*hm*sg,y,-.82*hm*sg);sun.position.copy(sunDir).multiplyScalar(100);
@@ -771,8 +810,10 @@ function dayUpd(dt){phi=(phi+dt/360)%1;const tg=raid?.75:phi,df=((tg-dph+1.5)%1)
  scene.fog.far=(1100-(raid?450:300)*nightK)*(touchUI?GF[SET.gfx]:1);hemi.intensity=.35+.6*(1-nightK);sun.intensity=Math.max(0,y)*1.6+.15;sun.color.setRGB(1,.7+.25*dayK,.48+.37*dayK);
  for(const m of mats)m.emissiveIntensity=.25+.75*nightK;
  spaceK+=((pos.y>350?Math.min(1,(pos.y-350)/450):0)-spaceK)*(1-Math.exp(-dt*1.5));
- if(spaceK>.002){spaceG.visible=true;spaceG.position.copy(cam.position);for(const m of spaceMats)m.opacity=spaceK}else spaceG.visible=false;
- earthPlanet.visible=spaceK>.01;earthPlanet.material.opacity=spaceK;base.material.opacity=1-spaceK;
+ if(spaceK>.002){spaceG.visible=true;spaceG.position.copy(cam.position);for(const m of spaceMats)m.opacity=spaceK;for(const s of sats){s.rotation.y+=dt*.2;s.rotation.z+=dt*.04}}else spaceG.visible=false;
+ earthPlanet.visible=spaceK>.01;earthPlanet.material.opacity=spaceK;base.material.opacity=1-spaceK;base.material.depthWrite=spaceK<.5;
+ const tk=1-spaceK;
+ for(const m of townMats){m.transparent=tk<.999;m.opacity=tk;m.depthWrite=tk>.6}
  stars.material.opacity=Math.max(nightK,spaceK);
  if(spaceK>0){U.uHz.value.multiplyScalar(1-spaceK*.75);U.uMid.value.multiplyScalar(1-spaceK*.85);U.uTop.value.multiplyScalar(1-spaceK*.92);scene.fog.color.multiplyScalar(1-spaceK*.8);scene.fog.far+=(6000-scene.fog.far)*spaceK}}
 // dynamic music

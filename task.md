@@ -11,7 +11,7 @@ Done:
 - Rescue arrow now shows on both builds (it was invisible on both), dispatch panel on both, "Reset progress" in the powerups panel.
 - README fixed.
 - Rewind (X on desktop, top-right button on mobile): repairs buildings that collapsed in the last 20 s to 1/4 height and brings back citizens lost in that window; 45 s cooldown. `check.mjs` checks the wiring.
-- Space: above ~350 m the town fades onto the Earth planet; the moon is a real second ground you can fly to and walk on (`MOON` at x 1150, top 1250 m). HUD says "On the Moon".
+- Space: above ~350 m the town fades out onto the Earth planet (ground, buildings, lamps, park, trees share `townMats`); the moon is a real second ground you can fly to and walk on (`MOON` at x 1150, top 1250 m). HUD says "On the Moon". The moon has a crater texture, boulders, peaks and crater discs on the surface, plus three drifting satellites in the sky box.
 - Meteor special mission from wave 4, every 4th wave: a big meteor falls toward the city. Shoot or punch it down; if it lands, it collapses buildings, kills nearby citizens and hurts you (rewind can undo it). HUD shows the countdown.
 
 Next:

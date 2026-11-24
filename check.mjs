@@ -35,7 +35,7 @@ if (!src.includes('THREE')) bad('game.js does not use THREE');
 for (const s of ['function rewind(', "e.code==='KeyX'", "press('bRewind'", "set('bRewind'"]) {
   if (!src.includes(s)) bad('game.js missing rewind wiring: ' + s);
 }
-for (const s of ['function moonY(', 'function spawnMeteor(', 'function meteorHit(', 'earthPlanet']) {
+for (const s of ['function moonY(', 'function spawnMeteor(', 'function meteorHit(', 'earthPlanet', 'satellite(', 'moonD', 'townMats']) {
   if (!src.includes(s)) bad('game.js missing space wiring: ' + s);
 }
 if (!readFileSync('pc.html', 'utf8').includes('X rewind')) bad('pc.html does not mention X rewind');
